@@ -1,0 +1,2174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GridTanker — Admin Portal</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect x='2' y='2' width='20' height='20' rx='5' fill='%23111' stroke='%235DCAA5' stroke-width='1.4'/><path d='M6 16L10 7L14 13L18 5' stroke='%235DCAA5' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap');
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+
+:root {
+  --tx: #1a1a1a; --tx2: #6b6b6b; --tx3: #a0a0a0;
+  --brd: #e8e7e4;
+  --cbg: #ffffff; --cbg2: #f0efed; --cbg3: #f5f5f3;
+  --acc: #1D9E75; --accl: #e8f5ef; --accd: #0F6E56;
+  --warn: #d4880a; --warnl: #faf0da;
+  --alr: #c93c3c; --alrl: #fce8e8;
+  --r: 14px; --rs: 10px; --pill: 20px;
+}
+
+body { background: var(--cbg3); min-height: 100vh; }
+
+.shell { display:flex; min-height:100vh; background:var(--cbg3); }
+
+/* ── SIDEBAR ── */
+.sb { width:230px; background:#111; display:flex; flex-direction:column; flex-shrink:0; position:fixed; top:0; left:0; bottom:0; z-index:50; }
+.sb .logo { padding:20px 16px 16px; display:flex; align-items:center; gap:10px; border-bottom:1px solid #333; }
+.sb .logo svg { width:26px; height:26px; }
+.sb .logo b { font-size:14px; font-weight:600; color:#fff; }
+.sb .logo small { font-size:8px; color:var(--acc); background:rgba(29,158,117,.15); padding:2px 7px; border-radius:var(--pill); margin-left:auto; font-weight:600; }
+.lang { display:flex; gap:3px; padding:10px 14px 4px; }
+.lang span { font-size:10px; padding:3px 7px; border-radius:var(--pill); cursor:pointer; color:#777; font-weight:500; transition:.15s; }
+.lang span:hover { color:#bbb; }
+.lang span.on { background:rgba(29,158,117,.2); color:var(--acc); }
+.wss { padding:6px 14px 4px; }
+.wss select { width:100%; background:#222; border:1px solid #444; color:#eee; font-size:12px; padding:8px 10px; border-radius:var(--rs); appearance:none; cursor:pointer; font-weight:500; font-family:inherit; background-image:url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L4 4L7 1' stroke='%2399f5d5' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; }
+.wsl { font-size:9px; text-transform:uppercase; letter-spacing:.8px; color:#777; padding:0 4px 3px; display:block; font-weight:600; }
+.ni { display:flex; align-items:center; gap:9px; padding:9px 14px; margin:1px 8px; border-radius:var(--rs); font-size:12px; cursor:pointer; transition:.15s; color:#999; font-weight:500; }
+.ni:hover { background:#222; color:#ddd; }
+.ni.on { background:rgba(29,158,117,.15); color:var(--acc); }
+.ni svg { width:16px; height:16px; opacity:.6; flex-shrink:0; }
+.ni.on svg { opacity:1; }
+.nbg { margin-left:auto; font-size:8px; background:var(--warn); color:#fff; padding:2px 6px; border-radius:var(--pill); font-weight:600; }
+.sf { margin-top:auto; padding:12px 14px; border-top:1px solid #333; }
+.up { display:flex; align-items:center; gap:8px; }
+.up .ava { width:32px; height:32px; border-radius:50%; background:var(--acc); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:#fff; }
+.up .un { font-size:11px; color:#fff; font-weight:500; }
+.up .ur { font-size:9px; color:#777; }
+
+/* ── MAIN ── */
+.mn { flex:1; display:flex; flex-direction:column; min-width:0; margin-left:230px; }
+.topb { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:var(--cbg); border-bottom:1px solid var(--brd); position:sticky; top:0; z-index:30; }
+.topb h1 { font-size:16px; font-weight:600; color:var(--tx); }
+.ct { flex:1; padding:18px 24px; overflow-y:auto; }
+
+/* ── COMPONENTS ── */
+.btn { font-size:10px; padding:7px 14px; border-radius:var(--rs); border:1px solid var(--brd); background:var(--cbg); cursor:pointer; color:var(--tx2); font-weight:500; display:inline-flex; align-items:center; gap:4px; font-family:inherit; transition:.15s; }
+.btn:hover { background:var(--cbg2); }
+.btn.pr { background:#111; color:#fff; border-color:#111; }
+.btn.pr:hover { background:#222; }
+.btn.acc { background:var(--acc); color:#fff; border-color:var(--acc); }
+.btn.acc:hover { background:var(--accd); }
+
+.mets { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin-bottom:16px; }
+.mc { background:var(--cbg); border-radius:var(--r); padding:16px; border:1px solid var(--brd); transition:.15s; }
+.mc:hover { border-color:var(--acc); }
+.mc .ml { font-size:9px; color:var(--tx3); margin-bottom:3px; text-transform:uppercase; letter-spacing:.5px; font-weight:600; }
+.mc .mv { font-size:22px; font-weight:600; color:var(--tx); letter-spacing:-.4px; }
+.mc .ms { font-size:9px; margin-top:3px; font-weight:500; color:var(--accd); }
+
+.fp { background:var(--cbg); border-radius:var(--r); border:1px solid var(--brd); padding:18px; margin-bottom:12px; }
+.fh { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.fh h2 { font-size:13px; font-weight:600; color:var(--tx); }
+.phl { font-size:9px; color:var(--acc); cursor:pointer; font-weight:500; }
+
+.pill { font-size:9px; padding:3px 10px; border-radius:var(--pill); font-weight:600; display:inline-flex; align-items:center; }
+.p-on { background:var(--accl); color:var(--accd); }
+.p-mnt { background:var(--warnl); color:var(--warn); }
+.p-flt { background:var(--alrl); color:var(--alr); }
+.p-pnd { background:var(--cbg2); color:var(--tx2); }
+.p-dk { background:#111; color:#fff; }
+
+.hidden { display:none !important; }
+
+/* Site cards */
+.sc { background:var(--cbg); border:1px solid var(--brd); border-radius:var(--r); margin-bottom:10px; overflow:hidden; transition:.15s; }
+.sc:hover { border-color: rgba(29,158,117,.3); }
+.shd { display:flex; align-items:center; justify-content:space-between; padding:16px 18px; cursor:pointer; transition:.1s; }
+.shd:hover { background:var(--cbg2); }
+.shd .sn { font-size:13px; font-weight:600; color:var(--tx); }
+.shd .sloc { font-size:10px; color:var(--tx2); }
+.shd .sr { display:flex; align-items:center; gap:10px; font-size:11px; }
+.shd .arr { font-size:16px; color:var(--tx3); }
+.sa { border-top:1px solid var(--brd); padding:14px 18px; }
+
+/* Asset rows */
+.ar { display:flex; align-items:center; gap:9px; padding:10px 14px; border-radius:var(--rs); cursor:pointer; margin-bottom:4px; background:var(--cbg2); transition:.12s; }
+.ar:hover { background:var(--cbg3); transform:translateX(2px); }
+
+/* Overlays */
+.asset-view { position:fixed; top:0; right:0; bottom:0; left:230px; background:var(--cbg3); z-index:40; padding:18px 24px; overflow-y:auto; }
+.wizard-overlay { position:fixed; top:0; right:0; bottom:0; left:230px; background:var(--cbg); z-index:45; overflow-y:auto; }
+
+/* Forms */
+.wf { margin-bottom:14px; }
+.wf label { font-size:9px; color:var(--tx3); display:block; margin-bottom:3px; text-transform:uppercase; letter-spacing:.4px; font-weight:600; }
+.wf input, .wf select { width:100%; font-size:12px; padding:9px 12px; border-radius:var(--rs); border:1px solid var(--brd); background:var(--cbg); color:var(--tx); font-weight:500; font-family:inherit; transition:.15s; }
+.wf input:focus, .wf select:focus { outline:none; border-color:var(--acc); }
+
+/* Tables */
+table.dt { width:100%; border-collapse:collapse; font-size:11px; color:var(--tx); }
+table.dt th { text-align:left; font-weight:600; color:var(--tx3); padding:8px 4px; border-bottom:1px solid var(--brd); font-size:9px; text-transform:uppercase; letter-spacing:.3px; }
+table.dt td { padding:10px 4px; border-bottom:1px solid var(--brd); color:var(--tx); }
+table.dt tr:last-child td { border-bottom:none; }
+table.dt tr:hover td { background:var(--cbg2); }
+
+.gf-row { display:flex; justify-content:space-between; padding:4px 0; font-size:11px; }
+.gf-row .gfl { color:var(--tx2); }
+.gf-row .gfv { font-weight:600; color:var(--tx); }
+
+/* Earnings */
+.earn-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:8px; margin-bottom:12px; }
+.earn-card { background:var(--cbg2); border-radius:8px; padding:12px 10px; text-align:center; transition:.15s; }
+.earn-card:hover { background:var(--cbg3); }
+.earn-card .ec-label { font-size:8px; color:var(--tx3); text-transform:uppercase; letter-spacing:.4px; font-weight:600; margin-bottom:3px; }
+.earn-card .ec-val { font-size:13px; font-weight:600; color:var(--tx); }
+
+.po-row { display:flex; align-items:center; justify-content:space-between; padding:7px 0; border-bottom:1px solid var(--brd); font-size:11px; }
+.po-row:last-child { border-bottom:none; }
+.po-row .po-left { display:flex; align-items:center; gap:7px; }
+.po-row .po-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+.po-row .po-name { color:var(--tx); font-weight:500; }
+.po-pos { color:var(--accd); }
+.po-neg { color:var(--alr); }
+
+/* Energy flow */
+.ef-price { display:flex; justify-content:center; gap:18px; margin-top:10px; padding:8px 16px; background:var(--cbg2); border-radius:8px; font-size:11px; font-weight:600; color:var(--tx); }
+.ef-price span { color:var(--tx2); font-weight:500; }
+
+/* Gear button */
+.gear-btn { width:30px; height:30px; border-radius:7px; border:1px solid var(--brd); background:var(--cbg); cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:.15s; }
+.gear-btn:hover { background:var(--cbg2); border-color:var(--tx3); }
+
+/* Partner card */
+.partner-card { border:1px solid var(--brd); border-radius:var(--rs); padding:14px; display:flex; align-items:center; gap:12px; margin-bottom:10px; }
+.partner-card .pc-logo { width:44px; height:44px; border-radius:10px; background:var(--cbg2); display:flex; align-items:center; justify-content:center; font-size:16px; font-weight:700; color:var(--acc); flex-shrink:0; }
+.partner-card .pc-name { font-size:13px; font-weight:600; color:var(--tx); }
+.partner-card .pc-desc { font-size:10px; color:var(--tx2); }
+
+.site-chip { display:inline-flex; align-items:center; padding:5px 14px; border-radius:var(--pill); font-size:10px; font-weight:600; cursor:pointer; border:1.5px solid var(--brd); background:var(--cbg); color:var(--tx2); margin-right:4px; margin-bottom:4px; transition:.15s; }
+.site-chip:hover { border-color:var(--tx); color:var(--tx); }
+.site-chip.on { background:#111; color:#fff; border-color:#111; }
+
+.actions-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+
+.time-sel { display:flex; gap:0; background:var(--cbg2); border-radius:8px; padding:2px; border:1px solid var(--brd); }
+.time-sel span { font-size:10px; padding:5px 12px; border-radius:6px; cursor:pointer; font-weight:600; color:var(--tx3); transition:.15s; }
+.time-sel span:hover { color:var(--tx2); }
+.time-sel span.on { background:var(--cbg); color:var(--tx); border:1px solid var(--brd); box-shadow:0 1px 3px rgba(0,0,0,.06); }
+
+.be-box { background:var(--accl); border-radius:var(--rs); padding:12px; margin-top:10px; border:1px solid rgba(29,158,117,.2); }
+
+/* Animated icons */
+.anim-icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; flex-shrink:0; border-radius:8px; overflow:hidden; }
+.anim-icon.sm { width:24px; height:24px; border-radius:6px; }
+.anim-icon.xs { width:18px; height:18px; border-radius:4px; }
+.anim-icon.lg { width:44px; height:44px; border-radius:10px; }
+
+@keyframes shake { 0%,100%{transform:translate(0,0)} 25%{transform:translate(-.4px,.2px)} 75%{transform:translate(.4px,-.2px)} }
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+@keyframes pulse-glow { 0%,100%{opacity:.5} 50%{opacity:1} }
+@keyframes charge-flow { 0%{opacity:.2} 50%{opacity:1} 100%{opacity:.2} }
+@keyframes idle-breathe { 0%,100%{opacity:.3} 50%{opacity:.55} }
+.genset-on .gen-body { animation:shake .15s infinite; }
+.wind-on .wind-blade { animation:spin 1.2s linear infinite; transform-origin:center; }
+.solar-on .sun-glow { animation:pulse-glow 2s ease-in-out infinite; }
+.bat-on .charge-bar { animation:charge-flow 1.5s ease-in-out infinite; }
+.crypto-on .cr-hash { animation:pulse-glow 1s ease-in-out infinite; }
+.grid-on .grid-pulse { animation:pulse-glow 2.5s ease-in-out infinite; }
+.asset-idle .idle-el { animation:idle-breathe 3s ease-in-out infinite; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .sb { width:60px; }
+  .sb .logo b, .sb .logo small, .wss, .wsl, .lang, .ni span, .ni .nbg, .up .un, .up .ur { display:none; }
+  .ni { justify-content:center; padding:10px; margin:2px 4px; }
+  .mn { margin-left:60px; }
+  .asset-view, .wizard-overlay { left:60px; }
+  .mets { grid-template-columns:repeat(2,1fr); }
+}
+canvas { cursor:default; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+<div class="sb">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="2" y="2" width="20" height="20" rx="5" stroke="#5DCAA5" stroke-width="1.4"/><path d="M6 16L10 7L14 13L18 5" stroke="#5DCAA5" stroke-width="1.8" fill="none" stroke-linecap="round"/><circle cx="18" cy="5" r="1.5" fill="#5DCAA5"/></svg>
+    <b>GridTanker</b><small>MVP</small>
+  </div>
+  <div class="lang" id="lang">
+    <span class="on" data-l="en">EN</span>
+    <span data-l="et">ET</span>
+    <span data-l="ru">RU</span>
+  </div>
+  <div class="wss">
+    <span class="wsl">Workspace</span>
+    <select id="ws-sel"></select>
+  </div>
+  <div style="padding:2px 14px 6px"><button class="btn" style="width:100%;justify-content:center;font-size:9px;padding:5px 8px;background:#222;color:#999;border-color:#333" onclick="showAddWS()">+ Add workspace</button></div>
+  <div style="padding:4px 0" id="nav-list"></div>
+  <div class="sf">
+    <div class="up">
+      <div class="ava">SV</div>
+      <div>
+        <div class="un">Sander Vahtras</div>
+        <div class="ur">Admin</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mn">
+  <div class="topb"><h1 id="pt">Dashboard</h1></div>
+  <div style="position:relative;flex:1;display:flex;flex-direction:column">
+    <div class="ct" id="ct"></div>
+    <div class="wizard-overlay hidden" id="wiz"></div>
+    <div class="asset-view hidden" id="av"></div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+// ══════════════════════════════════════════════
+// GridTanker Admin Portal — Deployable Build
+// ══════════════════════════════════════════════
+
+const G='#0F6E56', GL='#1D9E75', GLL='#e8f5ef';
+const tCol = { genset:G, battery:GL, solar:'#5DCAA5', wind:'#085041', crypto:'#04342C', hydro:'#2471a3', grid:'#3a7bd5', building:'#e67e22' };
+
+// ── Asset Icon Builder ──
+function AI(tp, act, sz='') {
+  const s = sz==='lg'?44:sz==='sm'?24:sz==='xs'?18:32;
+  const cls = sz ? ` ${sz}` : '';
+  const on = act;
+  const bg = on ? (tp==='grid'?'rgba(58,123,213,.12)':tp==='building'?'rgba(230,126,34,.12)':tp==='hydro'?'rgba(36,113,163,.12)':GLL) : 'var(--cbg2)';
+  const onC = on ? ({genset:'genset-on',wind:'wind-on',solar:'solar-on',battery:'bat-on',crypto:'crypto-on',hydro:'wind-on',grid:'grid-on',building:'asset-idle'}[tp]||'') : 'asset-idle';
+  const ic = {
+    genset:`<g class="${on?'gen-body':'idle-el'}"><rect x="4" y="8" width="24" height="16" rx="3" stroke="${G}" stroke-width="2" fill="${on?'rgba(29,158,117,.1)':'none'}"/><rect x="8" y="12" width="3" height="8" rx="1" fill="${GL}"/><rect x="14" y="10" width="3" height="12" rx="1" fill="${GL}"/><rect x="20" y="12" width="3" height="8" rx="1" fill="${GL}"/></g>`,
+    wind:`<line x1="16" y1="16" x2="16" y2="30" stroke="${G}" stroke-width="2.5"/><g class="${on?'wind-blade':'idle-el'}" style="transform-origin:16px 14px"><line x1="16" y1="14" x2="16" y2="3" stroke="${GL}" stroke-width="2.5"/><line x1="16" y1="14" x2="6" y2="20" stroke="${GL}" stroke-width="2.5"/><line x1="16" y1="14" x2="26" y2="20" stroke="${GL}" stroke-width="2.5"/></g><circle cx="16" cy="14" r="2.5" fill="${G}"/>`,
+    solar:`<rect x="4" y="10" width="24" height="16" rx="2" stroke="${G}" stroke-width="2"/><line x1="4" y1="18" x2="28" y2="18" stroke="${G}" stroke-width="1"/><line x1="12" y1="10" x2="12" y2="26" stroke="${G}" stroke-width="1"/>${on?`<g class="sun-glow"><circle cx="26" cy="6" r="3" fill="${GL}"/></g>`:''}`,
+    battery:`<rect x="4" y="9" width="22" height="14" rx="3" stroke="${G}" stroke-width="2"/><rect x="26" y="13" width="3" height="6" rx="1" fill="${G}" opacity=".5"/><rect x="7" y="12" width="5" height="8" rx="1.5" fill="${GL}" class="${on?'charge-bar':'idle-el'}"/>`,
+    crypto:`<rect x="4" y="4" width="24" height="24" rx="4" stroke="${G}" stroke-width="2"/><text x="16" y="20" text-anchor="middle" font-size="14" font-weight="700" fill="${GL}" class="${on?'cr-hash':'idle-el'}">#</text>`,
+    hydro:`<g class="${on?'wind-blade':'idle-el'}" style="transform-origin:16px 16px"><path d="M16 4c-4 6-8 10-8 14a8 8 0 0016 0c0-4-4-8-8-14z" fill="none" stroke="#2471a3" stroke-width="2"/>${on?'<path d="M12 18c1-2 3-3 5-1s3 1 4-1" stroke="#2471a3" stroke-width="1.5" fill="none"/>':''}</g>`,
+    building:`<g class="idle-el"><path d="M6 26h20v-14l-10-6-10 6z" fill="none" stroke="#e67e22" stroke-width="2"/><rect x="12" y="18" width="8" height="8" rx="1" fill="#e67e22" opacity=".3"/></g>`,
+    grid:`<g class="${on?'grid-pulse':'idle-el'}"><line x1="16" y1="4" x2="16" y2="14" stroke="#3a7bd5" stroke-width="2.5"/><line x1="10" y1="14" x2="22" y2="14" stroke="#3a7bd5" stroke-width="2"/><line x1="11" y1="14" x2="8" y2="22" stroke="#3a7bd5" stroke-width="1.8"/><line x1="16" y1="14" x2="16" y2="22" stroke="#3a7bd5" stroke-width="1.8"/><line x1="21" y1="14" x2="24" y2="22" stroke="#3a7bd5" stroke-width="1.8"/><line x1="8" y1="22" x2="24" y2="22" stroke="#3a7bd5" stroke-width="1.5"/><line x1="10" y1="22" x2="7" y2="28" stroke="#3a7bd5" stroke-width="1.5"/><line x1="16" y1="22" x2="16" y2="28" stroke="#3a7bd5" stroke-width="1.5"/><line x1="22" y1="22" x2="25" y2="28" stroke="#3a7bd5" stroke-width="1.5"/></g>`
+  };
+  return `<div class="anim-icon${cls} ${onC}" style="background:${bg}"><svg width="${s*.55}" height="${s*.55}" viewBox="0 0 32 32" fill="none">${ic[tp]||ic.genset}</svg></div>`;
+}
+
+function P(s) { const m={online:'p-on',dispatching:'p-on',maintenance:'p-mnt',fault:'p-flt',pending:'p-pnd'}; return `<span class="pill ${m[s]||'p-pnd'}">${s}</span>`; }
+function ss(s) { const t=s.assets.map(a=>a.status); if(t.includes('fault'))return'fault'; if(t.includes('dispatching'))return'dispatching'; if(t.every(x=>x==='pending'))return'pending'; if(t.includes('maintenance'))return'maintenance'; return'operational'; }
+function isAc(s) { return ['online','dispatching'].includes(s); }
+
+// ── SVG Arc helper ──
+function svgArc(acx,acy,r,startDeg,endDeg){
+  const s=startDeg*Math.PI/180,e=endDeg*Math.PI/180;
+  const x1=acx+r*Math.cos(s),y1=acy+r*Math.sin(s),x2=acx+r*Math.cos(e),y2=acy+r*Math.sin(e);
+  const large=Math.abs(endDeg-startDeg)>180?1:0;
+  return`M${x1.toFixed(1)},${y1.toFixed(1)} A${r},${r} 0 ${large} 1 ${x2.toFixed(1)},${y2.toFixed(1)}`;
+}
+function drawGauge(gx,gy,r,current,maxA,voltage,label,col){
+  const pct=Math.min(1,current/maxA);
+  const startA=-220,endA=40,range=endA-startA,fillEnd=startA+range*pct,sw=r*.22;
+  let g='';
+  g+=`<path d="${svgArc(gx,gy,r,startA,endA)}" fill="none" stroke="rgba(128,128,128,.18)" stroke-width="${sw}" stroke-linecap="round"/>`;
+  if(pct>0.005) g+=`<path d="${svgArc(gx,gy,r,startA,fillEnd)}" fill="none" stroke="${col}" stroke-width="${sw}" stroke-linecap="round" opacity=".9"/>`;
+  g+=`<text x="${gx}" y="${gy-r-3}" text-anchor="middle" font-size="${r*.42}" fill="${col}" font-weight="700">${label}</text>`;
+  const fmtA=current>=100?Math.round(current)+'A':current.toFixed(1)+'A';
+  g+=`<text x="${gx}" y="${gy+1}" text-anchor="middle" font-size="${r*.48}" fill="${col}" font-weight="700">${fmtA}</text>`;
+  g+=`<text x="${gx}" y="${gy+r*.4}" text-anchor="middle" font-size="${r*.38}" fill="#555" font-weight="600">${voltage}V</text>`;
+  const fmtMax=maxA>=100?Math.round(maxA)+'A':maxA+'A';
+  const zx=gx+r*1.08*Math.cos(startA*Math.PI/180),zy=gy+r*1.08*Math.sin(startA*Math.PI/180);
+  const mx=gx+r*1.08*Math.cos(endA*Math.PI/180),my=gy+r*1.08*Math.sin(endA*Math.PI/180);
+  g+=`<text x="${zx}" y="${zy+r*.25}" text-anchor="middle" font-size="${r*.26}" fill="#aaa">0</text>`;
+  g+=`<text x="${mx}" y="${my+r*.25}" text-anchor="middle" font-size="${r*.26}" fill="#aaa">${fmtMax}</text>`;
+  return g;
+}
+
+// ── Energy Flow Diagram ──
+function buildEF(site) {
+  const assets=site.assets, n=assets.length;
+  if(!n) return '<div style="padding:40px;text-align:center;color:var(--tx3)">No assets connected</div>';
+  const bLoad=site.buildingLoad||20;
+  let totalProd=0, totalCons=bLoad;
+  assets.forEach(a=>{if(!isAc(a.status))return; const kw=a.sessions[0]?.kwAvg||a.kw; if(a.type==='crypto')totalCons+=kw; else totalProd+=kw;});
+  const netKw=totalProd-totalCons, exporting=netKw>0;
+  const gc=site.gridConn||{consA:200,prodA:400};
+  const bAmps=Math.round(bLoad*1000/3/230), bMaxA=Math.round(bLoad*1000/3/230*1.5);
+
+  const nodes=[...assets.map(a=>({...a,isGrid:false,isBldg:false})),{id:'Building',type:'building',isGrid:false,isBldg:true,kw:bLoad,status:'online',sessions:[],ph:{a:[bAmps,bAmps,bAmps],v:[231,230,232],maxA:bMaxA}},{id:'GRID',type:'grid',isGrid:true,isBldg:false,kw:Math.abs(netKw),status:'online',sessions:[]}];
+  const total=nodes.length;
+  const detail=efDetail;
+
+  // Layout: in detail mode, spread nodes wider to make room for gauge rings beside them
+  const VW=detail?960:680, VH=detail?740:500;
+  const cxH=VW/2, cyH=VH/2;
+  const hRadius=detail?220:155, nodeR=28, hubR=42;
+  const gaugeR=detail?26:0, gaugeSpacing=gaugeR*2.4;
+
+  const pos=[];
+  for(let i=0;i<total;i++){const ang=-Math.PI/2+(2*Math.PI*i/total);pos.push({x:cxH+Math.cos(ang)*hRadius,y:cyH+Math.sin(ang)*hRadius});}
+
+  let svg=`<svg viewBox="0 0 ${VW} ${VH}" xmlns="http://www.w3.org/2000/svg" style="max-width:${VW}px;width:100%;margin:0 auto;display:block">`;
+  svg+=`<defs>`;
+  nodes.forEach((_,i)=>{
+    svg+=`<path id="toH${site.id}${i}" d="M${pos[i].x},${pos[i].y} L${cxH},${cyH}"/>`;
+    svg+=`<path id="frH${site.id}${i}" d="M${cxH},${cyH} L${pos[i].x},${pos[i].y}"/>`;
+  });svg+=`</defs>`;
+
+  // Lines
+  nodes.forEach((_,i)=>{svg+=`<line x1="${cxH}" y1="${cyH}" x2="${pos[i].x}" y2="${pos[i].y}" stroke="rgba(128,128,128,.12)" stroke-width="2"/>`;});
+
+  // Animated dots
+  nodes.forEach((nd,i)=>{
+    if(nd.isGrid){
+      const pid=exporting?`toH${site.id}${i}`:`frH${site.id}${i}`;
+      const dir=exporting?'keyPoints="1;0" keyTimes="0;1"':'';
+      for(let d=0;d<3;d++){svg+=`<circle r="4.5" fill="#3a7bd5" opacity=".6"><animateMotion dur="${2+d*.25}s" begin="${d*.6}s" repeatCount="indefinite" ${dir}><mpath href="#${pid}"/></animateMotion></circle>`;}
+    } else if(nd.isBldg){
+      for(let d=0;d<2;d++){svg+=`<circle r="4" fill="#e67e22" opacity=".6"><animateMotion dur="${2+d*.3}s" begin="${d*.5}s" repeatCount="indefinite"><mpath href="#frH${site.id}${i}"/></animateMotion></circle>`;}
+    } else if(isAc(nd.status)){
+      const consuming=nd.type==='crypto';
+      const pid=consuming?`frH${site.id}${i}`:`toH${site.id}${i}`;
+      for(let d=0;d<3;d++){svg+=`<circle r="4.5" fill="${GL}" opacity=".7"><animateMotion dur="${1.5+d*.2}s" begin="${d*.5}s" repeatCount="indefinite"><mpath href="#${pid}"/></animateMotion></circle>`;}
+    }
+  });
+
+  // Hub
+  svg+=`<circle cx="${cxH}" cy="${cyH}" r="${hubR}" fill="#111"/>`;
+  svg+=`<text x="${cxH}" y="${cyH-18}" text-anchor="middle" fill="#fff" font-size="10" font-weight="500">GT</text>`;
+  svg+=`<text x="${cxH}" y="${cyH+3}" text-anchor="middle" fill="${exporting?'#5DCAA5':'#e67e22'}" font-size="17" font-weight="700">${exporting?'+':'-'}${Math.abs(netKw).toFixed(0)} kW</text>`;
+  svg+=`<text x="${cxH}" y="${cyH+17}" text-anchor="middle" fill="rgba(255,255,255,.6)" font-size="9">${exporting?'→ Export':'← Import'}</text>`;
+  svg+=`<text x="${cxH}" y="${cyH+29}" text-anchor="middle" fill="rgba(255,255,255,.4)" font-size="8">${gc.consA}A / ${gc.prodA}A</text>`;
+
+  const nodeIcons={
+    genset:'<rect x="-8" y="-6" width="16" height="12" rx="2" fill="none" stroke="#fff" stroke-width="1.6"/><line x1="-4" y1="-3" x2="-4" y2="3" stroke="#fff" stroke-width="1.3"/><line x1="0" y1="-4" x2="0" y2="4" stroke="#fff" stroke-width="1.3"/><line x1="4" y1="-3" x2="4" y2="3" stroke="#fff" stroke-width="1.3"/>',
+    battery:'<rect x="-9" y="-5" width="15" height="10" rx="2" fill="none" stroke="#fff" stroke-width="1.5"/><rect x="6" y="-2.5" width="3.5" height="5" rx="1" fill="#fff" opacity=".6"/>',
+    solar:'<rect x="-9" y="-5" width="18" height="10" rx="1.5" fill="none" stroke="#fff" stroke-width="1.5"/><line x1="-9" y1="0" x2="9" y2="0" stroke="#fff" stroke-width=".8"/>',
+    wind:'<line x1="0" y1="1" x2="0" y2="9" stroke="#fff" stroke-width="2.2"/><line x1="0" y1="-1" x2="0" y2="-9" stroke="#fff" stroke-width="2.2"/><line x1="0" y1="-1" x2="-7" y2="5" stroke="#fff" stroke-width="2.2"/><line x1="0" y1="-1" x2="7" y2="5" stroke="#fff" stroke-width="2.2"/>',
+    crypto:'<text x="0" y="6" text-anchor="middle" font-size="20" font-weight="700" fill="#fff">#</text>',
+    hydro:'<path d="M0 -8c-3 5-6 8-6 11a6 6 0 0012 0c0-3-3-6-6-11z" fill="none" stroke="#fff" stroke-width="1.6"/><path d="M-3 5c1-1.5 2.5-2 4-1s2.5.5 3-.5" stroke="#fff" stroke-width="1.2" fill="none"/>',
+    building:'<path d="M-8 9h16v-14l-8-6-8 6z" fill="none" stroke="#fff" stroke-width="1.6"/><rect x="-2" y="1" width="4" height="8" rx=".5" fill="#fff" opacity=".5"/>',
+    grid:'<line x1="0" y1="-9" x2="0" y2="-1" stroke="#fff" stroke-width="2.5"/><line x1="-7" y1="-1" x2="7" y2="-1" stroke="#fff" stroke-width="2"/><line x1="-6" y1="-1" x2="-8" y2="7" stroke="#fff" stroke-width="1.8"/><line x1="0" y1="-1" x2="0" y2="7" stroke="#fff" stroke-width="1.8"/><line x1="6" y1="-1" x2="8" y2="7" stroke="#fff" stroke-width="1.8"/><line x1="-8" y1="7" x2="8" y2="7" stroke="#fff" stroke-width="1.5"/>'
+  };
+  const phaseColors=['#c0392b','#27ae60','#2980b9'];
+
+  nodes.forEach((nd,i)=>{
+    const p=pos[i],on=nd.isGrid||nd.isBldg||isAc(nd.status);
+    const col=nd.isGrid?'#3a7bd5':nd.isBldg?'#e67e22':(tCol[nd.type]||G);
+    svg+=`<circle cx="${p.x}" cy="${p.y}" r="${nodeR}" fill="${on?col:'rgba(128,128,128,.25)'}"/>`;
+    svg+=`<g transform="translate(${p.x},${p.y})">${nodeIcons[nd.type]||nodeIcons.genset}</g>`;
+
+    // Determine label direction: use vector from hub to node
+    const dx=p.x-cxH, dy=p.y-cyH;
+    const dist=Math.sqrt(dx*dx+dy*dy)||1;
+    const ux=dx/dist, uy=dy/dist;
+    // Place text along the outward direction, well away from icon
+    const txtDist=nodeR+18;
+    const tx=p.x+ux*txtDist, ty=p.y+uy*txtDist;
+    // Text anchor based on direction
+    const anchor=Math.abs(ux)<0.3?'middle':(ux>0?'start':'end');
+    const tyOff=uy>0.3?14:(uy<-0.3?-4:4);
+
+    if(nd.isGrid){
+      svg+=`<text x="${tx}" y="${ty+tyOff-6}" text-anchor="${anchor}" font-size="14" fill="#3a7bd5" font-weight="700">${exporting?'Export':'Import'} ${Math.abs(netKw).toFixed(0)} kW</text>`;
+      svg+=`<text x="${tx}" y="${ty+tyOff+9}" text-anchor="${anchor}" font-size="9" fill="#555">Grid — ${exporting?gc.prodA:gc.consA}A fuse</text>`;
+    } else {
+      const kw=on?(nd.isBldg?bLoad:(nd.sessions[0]?.kwAvg||nd.kw)):0;
+      const consuming=nd.type==='crypto'||nd.isBldg;
+
+      if(!detail || !nd.ph || !on){
+        // Compact mode: text right next to icon
+        svg+=`<text x="${tx}" y="${ty+tyOff-6}" text-anchor="${anchor}" font-size="14" fill="${col}" font-weight="700">${consuming?'-':''}${kw>=1000?(kw/1000).toFixed(1)+' MW':kw+' kW'}</text>`;
+        svg+=`<text x="${tx}" y="${ty+tyOff+9}" text-anchor="${anchor}" font-size="10" fill="#333" font-weight="600">${nd.id}</text>`;
+      } else {
+        // Detail mode: text on opposite side from gauges
+        // Gauges go outward, text goes between icon and hub (inward side)
+        const itx=p.x-ux*(nodeR+6), ity=p.y-uy*(nodeR+6);
+        const ianchor=Math.abs(ux)<0.3?'middle':(ux>0?'end':'start');
+        const ityOff=uy>0.3?-8:(uy<-0.3?16:4);
+        svg+=`<text x="${itx}" y="${ity+ityOff-6}" text-anchor="${ianchor}" font-size="13" fill="${col}" font-weight="700">${consuming?'-':''}${kw>=1000?(kw/1000).toFixed(1)+' MW':kw+' kW'}</text>`;
+        svg+=`<text x="${itx}" y="${ity+ityOff+8}" text-anchor="${ianchor}" font-size="10" fill="#333" font-weight="600">${nd.id}</text>`;
+      }
+    }
+
+    // Phase gauges in detail mode — horizontal row, pushed far out from icon
+    if(detail && nd.ph && on && !nd.isGrid){
+      const ph=nd.ph, maxA=ph.maxA;
+      // Push gauge center far enough that gauge ring doesn't touch the icon
+      // gaugeR=26, so gauge extends gaugeR back toward icon. Need gDist > nodeR + gaugeR + padding
+      const gPad=16;
+      const gDist=nodeR+gaugeR+gPad+gaugeR; // icon edge + gauge radius + padding + extra clearance
+      const gcX=p.x+ux*gDist;
+      const gcY=p.y+uy*gDist;
+      // Horizontal row
+      for(let li=0;li<3;li++){
+        const gx=gcX+(li-1)*gaugeSpacing;
+        const gy=gcY;
+        svg+=drawGauge(gx,gy,gaugeR,ph.a[li],maxA,ph.v[li],'L'+(li+1),phaseColors[li]);
+      }
+    }
+  });
+  svg+=`</svg>`;
+  return svg;
+}
+// ── Earnings Panel ──
+function buildEarnings(assets, label) {
+  const pm=periodMult[gPeriod], tR=Math.round(assets.reduce((s,a)=>s+a.rev,0)*pm), fee=Math.round(tR*.15), gc=Math.round(assets.reduce((s,a)=>s+a.kw*.6,0)*pm);
+  let h=`<div class="fp"><div class="fh"><h2>Market revenue — ${label}</h2><span class="phl">${periodLabels[gPeriod]}</span></div><div class="earn-grid">`;
+  [{n:'mFRR',v:Math.round(tR*.30)},{n:'aFRR',v:Math.round(tR*.25)},{n:'FCR',v:Math.round(tR*.15)},{n:'Day-ahead',v:Math.round(tR*.30)}].forEach(e=>{
+    h+=`<div class="earn-card"><div class="ec-label">${e.n}</div><div class="ec-val">€${e.v.toLocaleString()}</div></div>`;
+  }); h+=`</div>`;
+  h+=`<div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:6px">Period overview</div>`;
+  assets.forEach(a=>{const v=Math.round(a.rev*pm*.85);h+=`<div class="po-row"><div class="po-left">${AI(a.type,isAc(a.status),'xs')}<span class="po-name">${a.id} — ${a.type}</span></div><span style="font-weight:600" class="${a.type==='crypto'?'po-neg':'po-pos'}">${a.type==='crypto'?'-':''}€${v.toLocaleString()}</span></div>`;});
+  h+=`<div class="po-row"><div class="po-left">${AI('building',true,'xs')}<span class="po-name">Building consumption</span></div><span style="font-weight:600" class="po-neg">-€${Math.round(gc*.4).toLocaleString()}</span></div>`;
+  h+=`<div class="po-row"><div class="po-left">${AI('grid',true,'xs')}<span class="po-name">Grid electricity</span></div><span style="font-weight:600" class="po-neg">-€${gc.toLocaleString()}</span></div>`;
+  h+=`<div class="po-row" style="border-top:2px solid var(--brd);padding-top:6px;margin-top:3px"><div class="po-left"><span class="po-name" style="font-weight:700">Net total</span></div><span style="font-weight:700;font-size:13px" class="po-pos">€${(tR-fee-gc).toLocaleString()}</span></div></div>`;
+  return h;
+}
+
+// ── Site Settings ──
+function buildSiteSettings(site) {
+  const tr=site.trader||{name:'Not assigned',desc:''};
+  const bm=site.balMgr||{name:'Not assigned',price:0};
+  const w=wd(), cc=w.cc||'EE', partners=getPartners(cc), balMgrs=getBalMgrs(cc);
+  let subOpts=SUBSCRIPTIONS.map(s=>`<option value="${s.name}" ${site.subscription===s.name?'selected':''}>${s.name} — ${s.price}</option>`).join('');
+
+  // EIC / Grid connection point
+  let h=`<div class="fp"><div class="fh"><h2>Grid connection point</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="wf"><label>EIC code (metering point)</label><input value="${site.eic||''}" placeholder="e.g. 38W-SOLAR-1234-Z"></div>
+      <div><div style="font-size:8px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:3px">Site created</div><div style="font-size:14px;font-weight:600;color:var(--tx)">${site.created||'—'}</div></div>
+    </div></div>`;
+
+  // Subscription
+  h+=`<div class="fp"><div class="fh"><h2>Subscription</h2></div>
+    <div style="margin-bottom:10px">${SUBSCRIPTIONS.map(s=>{const active=site.subscription===s.name;return`<div style="border:1.5px solid ${active?'var(--acc)':'var(--brd)'};border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;cursor:pointer;${active?'background:var(--accl)':''}" onclick="this.parentNode.querySelectorAll('div').forEach(d=>{d.style.borderColor='var(--brd)';d.style.background=''});this.style.borderColor='var(--acc)';this.style.background='var(--accl)'"><div style="display:flex;justify-content:space-between;align-items:center"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">${s.name}</div><div style="font-size:10px;color:var(--tx2)">${s.desc}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600;color:var(--tx)">${s.price}</span>${active?'<span class="pill p-on">Current</span>':''}</div></div></div>`;}).join('')}</div></div>`;
+
+  // Balance manager
+  h+=`<div class="fp"><div class="fh"><h2>Balance manager (BRP)</h2></div>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:10px;line-height:1.5">The balance responsible party (BRP) manages imbalance settlement with the TSO. Some BRPs bundle trading services; others allow you to choose a separate trader.</div>`;
+  balMgrs.forEach(b=>{
+    const active=bm.name===b.name;
+    h+=`<div style="border:1.5px solid ${active?'var(--acc)':'var(--brd)'};border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;cursor:pointer;${active?'background:var(--accl)':''}" onclick="this.parentNode.querySelectorAll('[data-bm]').forEach(d=>{d.style.borderColor='var(--brd)';d.style.background=''});this.style.borderColor='var(--acc)';this.style.background='var(--accl)'" data-bm>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:8px;background:var(--cbg2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--acc)">${b.name.substring(0,2).toUpperCase()}</div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--tx)">${b.name}</div><div style="font-size:9px;color:var(--tx2)">${b.desc}</div></div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="text-align:right"><div style="font-size:14px;font-weight:700;color:var(--tx)">€${b.price}/MWh</div><div style="font-size:8px;color:var(--tx2)">${b.bundledTrading?'Includes trading':'Trading separate'}</div></div>
+          ${active?'<span class="pill p-on">Active</span>':''}
+        </div>
+      </div></div>`;
+  });
+  h+=`</div>`;
+
+  // Trader with performance
+  h+=`<div class="fp"><div class="fh"><h2>Trader (flexibility aggregator)</h2></div>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:10px;line-height:1.5">The trader bids your assets into frequency markets (mFRR, aFRR, FCR) and handles settlement. Performance data is from last month.</div>`;
+  partners.forEach(p=>{
+    const active=tr.name===p.name;
+    const perf=p.perf||{};
+    const rankCol=perf.rank===1?'var(--acc)':perf.rank===2?'var(--warn)':'var(--tx2)';
+    const rankLabel=perf.rank===1?'Best':perf.rank===2?'2nd':'3rd';
+    h+=`<div style="border:1.5px solid ${active?'var(--acc)':'var(--brd)'};border-radius:var(--rs);padding:14px;margin-bottom:8px;cursor:pointer;${active?'background:var(--accl)':''}" onclick="this.parentNode.querySelectorAll('[data-tr]').forEach(d=>{d.style.borderColor='var(--brd)';d.style.background=''});this.style.borderColor='var(--acc)';this.style.background='var(--accl)'" data-tr>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:8px;background:var(--cbg2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:var(--acc)">${p.name.substring(0,2).toUpperCase()}</div>
+        <div><div style="font-size:12px;font-weight:600;color:var(--tx)">${p.name}</div><div style="font-size:9px;color:var(--tx2)">${p.desc}</div>
+          ${p.allowOtherTrader?'<div style="font-size:8px;color:#2471a3;margin-top:2px">✓ Allows separate balance manager</div>':''}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="text-align:right"><div style="font-size:14px;font-weight:700;color:var(--tx)">€${p.price}/MWh</div><div style="font-size:8px;color:var(--tx2)">Service fee</div></div>
+          ${active?'<span class="pill p-on">Active</span>':''}
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px 10px;background:var(--cbg2);border-radius:7px;font-size:9px">
+        <div><div style="color:var(--tx3);font-weight:600;text-transform:uppercase;font-size:7px;margin-bottom:2px">Revenue/MW</div><div style="font-weight:700;color:var(--tx)">€${perf.rev||0}</div></div>
+        <div><div style="color:var(--tx3);font-weight:600;text-transform:uppercase;font-size:7px;margin-bottom:2px">Activations</div><div style="font-weight:700;color:var(--tx)">${perf.act||0}</div></div>
+        <div><div style="color:var(--tx3);font-weight:600;text-transform:uppercase;font-size:7px;margin-bottom:2px">Avg price</div><div style="font-weight:700;color:var(--tx)">€${perf.avgPrice||0}</div></div>
+        <div><div style="color:var(--tx3);font-weight:600;text-transform:uppercase;font-size:7px;margin-bottom:2px">Rank</div><div style="font-weight:700;color:${rankCol}">#${perf.rank||'—'} ${rankLabel}</div></div>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // Account balance
+  h+=`<div class="fp"><div class="fh"><h2>Account balance</h2></div><div style="display:flex;justify-content:space-between;margin-bottom:12px"><span style="font-size:12px;color:var(--tx)">Current balance</span><div style="display:flex;gap:10px;align-items:center"><span style="font-size:16px;font-weight:600;color:var(--tx)">€${(site.balance||0).toFixed(2)}</span><button class="btn acc" style="font-size:9px">Request payment</button></div></div>`;
+  h+=`<table class="dt"><thead><tr><th>Date</th><th>Transaction</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;
+  [{d:'01 Dec 2025',t:'Initial balance',a:307.22},{d:'17 Dec 2025',t:'Service fee',a:-21.76,s:'Paid'},{d:'31 Dec 2025',t:'Income',a:44.65},{d:'19 Jan 2026',t:'Service fee',a:-11.07,s:'Paid'},{d:'31 Jan 2026',t:'Income',a:147.19},{d:'17 Feb 2026',t:'Service fee',a:-36.51,s:'Paid'},{d:'13 Mar 2026',t:'Payout',a:-429.00,s:'In payment'},{d:'16 Mar 2026',t:'Current balance',a:site.balance||0.72}].forEach(tx=>{
+    h+=`<tr><td style="color:var(--tx2);font-size:10px">${tx.d}</td><td>${tx.t}${tx.s?`<span class="pill ${tx.s==='Paid'?'p-on':'p-mnt'}" style="margin-left:5px">${tx.s}</span>`:''}</td><td style="text-align:right;font-weight:600;color:${tx.a<0?'var(--alr)':'var(--tx)'}">${tx.a<0?'-':''}€${Math.abs(tx.a).toFixed(2)}</td></tr>`;
+  }); h+=`</tbody></table></div>`;
+  // Billing
+  h+=`<div class="fp"><div class="fh"><h2>Billing history</h2></div><table class="dt"><thead><tr><th>State</th><th>Invoice</th><th>Date</th><th style="text-align:right">Amount</th></tr></thead><tbody>`;
+  [{id:'GTIN/2025/02132',d:'30 Sep 2025',a:23.93},{id:'GTIN/2025/03265',d:'30 Nov 2025',a:21.76},{id:'GTIN/2025/03984',d:'31 Dec 2025',a:11.07},{id:'GTIN/2026/00424',d:'31 Jan 2026',a:36.51},{id:'GTIN/2026/01187',d:'28 Feb 2026',a:42.30}].forEach(inv=>{
+    h+=`<tr><td><span class="pill p-on">Paid</span></td><td style="font-weight:500">${inv.id}</td><td style="color:var(--tx2);font-size:10px">${inv.d}</td><td style="text-align:right;font-weight:600">€${inv.a.toFixed(2)}</td></tr>`;
+  }); h+=`</tbody></table></div>`;
+  // Grid connection
+  const sgc=site.gridConn||{consA:200,prodA:400};
+  h+=`<div class="fp"><div class="fh"><h2>Grid connection</h2></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px"><div><div style="font-size:8px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:3px">Consumption fuse</div><div style="font-size:16px;font-weight:600;color:var(--tx)">${sgc.consA} A</div></div><div><div style="font-size:8px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:3px">Production fuse</div><div style="font-size:16px;font-weight:600;color:var(--tx)">${sgc.prodA} A</div></div><div><div style="font-size:8px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:3px">Building load</div><div style="font-size:16px;font-weight:600;color:#e67e22">${site.buildingLoad||0} kW</div></div></div></div>`;
+  h+=`<div class="fp"><div class="fh"><h2>Grid fees (€/MWh)</h2></div><div class="gf-row"><span class="gfl">Transmission</span><span class="gfv">€${site.gf.t}</span></div><div class="gf-row"><span class="gfl">Distribution</span><span class="gfv">€${site.gf.d}</span></div><div class="gf-row"><span class="gfl">Renewable</span><span class="gfv">€${site.gf.r}</span></div><div class="gf-row"><span class="gfl">Excise</span><span class="gfv">€${site.gf.e}</span></div><div class="gf-row" style="border-top:1.5px solid var(--brd);padding-top:4px;margin-top:3px"><span class="gfl" style="font-weight:600;color:var(--tx)">Total</span><span class="gfv">€${(site.gf.t+site.gf.d+site.gf.r+site.gf.e).toFixed(1)}</span></div></div>`;
+  return h;
+}
+
+// ══════════════════════════════════════════════
+// REFERENCE DATA — ENTSO-E zones, partners, subscriptions
+// ══════════════════════════════════════════════
+const ENTSOE={
+  AT:{name:'Austria',flag:'🇦🇹',zones:['AT']},
+  BE:{name:'Belgium',flag:'🇧🇪',zones:['BE']},
+  BG:{name:'Bulgaria',flag:'🇧🇬',zones:['BG']},
+  HR:{name:'Croatia',flag:'🇭🇷',zones:['HR']},
+  CZ:{name:'Czech Republic',flag:'🇨🇿',zones:['CZ']},
+  DK:{name:'Denmark',flag:'🇩🇰',zones:['DK1 — West','DK2 — East']},
+  EE:{name:'Estonia',flag:'🇪🇪',zones:['EE']},
+  FI:{name:'Finland',flag:'🇫🇮',zones:['FI']},
+  FR:{name:'France',flag:'🇫🇷',zones:['FR']},
+  DE:{name:'Germany',flag:'🇩🇪',zones:['DE-LU']},
+  GR:{name:'Greece',flag:'🇬🇷',zones:['GR']},
+  HU:{name:'Hungary',flag:'🇭🇺',zones:['HU']},
+  IE:{name:'Ireland',flag:'🇮🇪',zones:['IE-SEM']},
+  IT:{name:'Italy',flag:'🇮🇹',zones:['IT-North','IT-Central North','IT-Central South','IT-South','IT-Sardinia','IT-Sicily']},
+  LV:{name:'Latvia',flag:'🇱🇻',zones:['LV']},
+  LT:{name:'Lithuania',flag:'🇱🇹',zones:['LT']},
+  LU:{name:'Luxembourg',flag:'🇱🇺',zones:['DE-LU']},
+  NL:{name:'Netherlands',flag:'🇳🇱',zones:['NL']},
+  NO:{name:'Norway',flag:'🇳🇴',zones:['NO1 — Oslo','NO2 — Kristiansand','NO3 — Trondheim','NO4 — Tromsø','NO5 — Bergen']},
+  PL:{name:'Poland',flag:'🇵🇱',zones:['PL']},
+  PT:{name:'Portugal',flag:'🇵🇹',zones:['PT']},
+  RO:{name:'Romania',flag:'🇷🇴',zones:['RO']},
+  SK:{name:'Slovakia',flag:'🇸🇰',zones:['SK']},
+  SI:{name:'Slovenia',flag:'🇸🇮',zones:['SI']},
+  ES:{name:'Spain',flag:'🇪🇸',zones:['ES']},
+  SE:{name:'Sweden',flag:'🇸🇪',zones:['SE1 — Luleå','SE2 — Sundsvall','SE3 — Stockholm','SE4 — Malmö']},
+  CH:{name:'Switzerland',flag:'🇨🇭',zones:['CH']}
+};
+
+const PARTNERS={
+  EE:[{name:'Eesti Energia Trading',desc:'mFRR, aFRR — Elering TSO',price:18,perf:{rev:142,act:38,avgPrice:412,rank:2},allowOtherTrader:true},{name:'KratTrade',desc:'Flexibility — Baltics',price:12,perf:{rev:168,act:45,avgPrice:388,rank:1},allowOtherTrader:false},{name:'Fusebox Energy',desc:'Flexibility provider',price:15,perf:{rev:95,act:22,avgPrice:365,rank:3},allowOtherTrader:false}],
+  LV:[{name:'Latvenergo Trading',desc:'aFRR — AST TSO',price:16,perf:{rev:110,act:30,avgPrice:380,rank:1},allowOtherTrader:true},{name:'KratTrade',desc:'Flexibility — Baltics',price:12,perf:{rev:125,act:35,avgPrice:370,rank:2},allowOtherTrader:false}],
+  LT:[{name:'Ignitis Group',desc:'mFRR — Litgrid TSO',price:17,perf:{rev:130,act:32,avgPrice:395,rank:1},allowOtherTrader:false},{name:'KratTrade',desc:'Flexibility — Baltics',price:12,perf:{rev:118,act:28,avgPrice:375,rank:2},allowOtherTrader:false}],
+  FI:[{name:'Fortum Markets',desc:'FCR-N, FCR-D — Fingrid',price:14,perf:{rev:185,act:52,avgPrice:420,rank:1},allowOtherTrader:true},{name:'Flexens',desc:'Flexibility aggregator',price:11,perf:{rev:145,act:40,avgPrice:390,rank:2},allowOtherTrader:false}],
+  DE:[{name:'Next Kraftwerke',desc:'FCR, aFRR, mFRR',price:15,perf:{rev:210,act:55,avgPrice:445,rank:1},allowOtherTrader:false},{name:'Statkraft Markets',desc:'Flexibility — DACH',price:13,perf:{rev:188,act:48,avgPrice:430,rank:2},allowOtherTrader:false},{name:'Sonnen GmbH',desc:'Virtual power plant',price:16,perf:{rev:92,act:25,avgPrice:370,rank:3},allowOtherTrader:false}],
+  _default:[{name:'GridTanker Direct',desc:'Default aggregation service',price:10,perf:{rev:50,act:15,avgPrice:350,rank:1},allowOtherTrader:false}]
+};
+const BALANCE_MANAGERS={
+  EE:[{name:'Eesti Energia',price:18,desc:'Full balance responsibility — Elering',bundledTrading:true},{name:'Scener',price:9,desc:'Independent balance management',bundledTrading:false},{name:'Alexela',price:14,desc:'Balance + energy supply',bundledTrading:true}],
+  LV:[{name:'Latvenergo',price:16,desc:'Balance responsibility — AST',bundledTrading:true},{name:'Enefit',price:12,desc:'Balance management Latvia',bundledTrading:false}],
+  LT:[{name:'Ignitis',price:17,desc:'Balance responsibility — Litgrid',bundledTrading:true},{name:'Enefit',price:12,desc:'Balance management Lithuania',bundledTrading:false}],
+  FI:[{name:'Fortum',price:14,desc:'Balance management — Fingrid',bundledTrading:true},{name:'Väre',price:10,desc:'Independent BRP',bundledTrading:false}],
+  DE:[{name:'Next Kraftwerke',price:15,desc:'BRP — 50Hertz, TenneT, Amprion',bundledTrading:true},{name:'Statkraft',price:13,desc:'Independent BRP Germany',bundledTrading:false},{name:'Lichtblick',price:11,desc:'Green balance management',bundledTrading:false}],
+  _default:[{name:'GridTanker BRP',price:10,desc:'Default balance responsibility',bundledTrading:false}]
+};
+function getBalMgrs(cc){return BALANCE_MANAGERS[cc]||BALANCE_MANAGERS._default;}
+
+const SUBSCRIPTIONS=[
+  {id:'basic',name:'GridTanker Basic',price:'€49/mo',desc:'Up to 3 assets, basic monitoring, email alerts'},
+  {id:'pro',name:'GridTanker Pro',price:'€149/mo',desc:'Unlimited assets, real-time dispatch, API access, priority support'},
+  {id:'enterprise',name:'GridTanker Enterprise',price:'Custom',desc:'Multi-site, white-label, dedicated account manager, SLA'}
+];
+
+function getPartners(cc){return PARTNERS[cc]||PARTNERS._default;}
+
+// ══════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════
+const W = {
+  ee: { label:'Power OÜ — Estonia', reg:'16234567', vat:'EE102345678', cc:'EE', zone:'EE', sites:[
+    {id:'S1',name:'Tallinn Logistics Park',loc:'Tallinn',created:'15 Jun 2024',eic:'38W-SOLAR-1234-Z',balMgr:{name:'Eesti Energia',price:18},gf:{t:12.4,d:28.6,r:11.3,e:4.47},gridConn:{consA:250,prodA:400},buildingLoad:45,trader:{name:'Eesti Energia Trading',desc:'mFRR, aFRR — Elering TSO'},subscription:'GridTanker Pro',subUntil:'28 Aug 2026',balance:0.72,assets:[
+      {id:'GEN-001',type:'genset',installed:'22 Jul 2024',model:'CAT C18',kw:1000,kwh:8500,status:'online',rev:14280,avail:96.1,capex:85000,threshold:350,sessions:[{on:'06:00',off:'06:45',kwAvg:820,mkt:'mFRR'},{on:'10:15',off:'11:00',kwAvg:910,mkt:'aFRR'},{on:'14:00',off:'14:30',kwAvg:780,mkt:'mFRR'},{on:'17:30',off:'18:15',kwAvg:850,mkt:'mFRR'}],ph:{a:[1189,1175,1196],v:[232,230,231],maxA:1500},gen:{maxContKw:850,fuelPct:62,fuelLitres:930,tankLitres:1500,fuelWarnPct:20,workHrs:4820,maintIntervalHrs:500,lastMaintHrs:4600,tempC:74,battV:27.2,lastRefuel:'12 Mar 2026',tempHist:[45,44,42,41,40,40,42,55,68,72,74,76,78,75,70,65,58,50,46,44,43,42,41,40]}},
+      {id:'BAT-001',type:'battery',installed:'15 Nov 2024',model:'Tesla Megapack',kw:500,kwh:1920,status:'online',rev:8200,avail:98.2,capex:120000,threshold:200,sessions:[{on:'02:00',off:'04:00',kwAvg:-380,mkt:'Charge',socStart:22,socEnd:82},{on:'07:30',off:'08:30',kwAvg:450,mkt:'aFRR',socStart:82,socEnd:38},{on:'09:00',off:'10:30',kwAvg:-400,mkt:'Charge',socStart:38,socEnd:90},{on:'12:00',off:'12:45',kwAvg:480,mkt:'Day-ahead',socStart:90,socEnd:55},{on:'14:30',off:'15:00',kwAvg:-350,mkt:'Charge',socStart:55,socEnd:78},{on:'16:00',off:'16:40',kwAvg:420,mkt:'aFRR',socStart:78,socEnd:45},{on:'19:00',off:'19:30',kwAvg:490,mkt:'mFRR',socStart:68,socEnd:30},{on:'20:00',off:'22:00',kwAvg:-400,mkt:'Charge',socStart:30,socEnd:88}],ph:{a:[652,648,660],v:[231,230,232],maxA:800},bat:{soc:68,socMin:10,socMax:95,capKwh:1920,maxDischarge:500,maxCharge:400,cycles:847,maxCycles:6000,tempC:28,tempHist:[22,23,24,25,27,29,31,33,32,30,29,28,27,26,25,24,23,22,23,25,27,29,30,28]}},
+      {id:'SOL-001',type:'solar',installed:'3 Apr 2024',model:'SMA 50kW',kw:50,kwh:285,status:'online',rev:2100,avail:99.1,capex:35000,threshold:0,sessions:[{on:'07:00',off:'17:00',kwAvg:32,mkt:'Day-ahead'}],ph:{a:[46.4,46.0,46.8],v:[233,231,232],maxA:80},sol:{panelWp:50000,efficiency:18.5,currentIrradiance:620,forecast:[0,0,0,0,0,10,80,250,420,580,680,720,700,620,480,320,150,40,0,0,0,0,0,0],sunHrs:9.5,tiltAngle:35}},
+      {id:'WND-001',type:'wind',installed:'18 Aug 2023',model:'Enercon E-33',kw:330,kwh:4750,status:'online',rev:4800,avail:88.3,capex:220000,threshold:0,sessions:[{on:'00:00',off:'08:00',kwAvg:240,mkt:'Day-ahead'},{on:'13:00',off:'23:59',kwAvg:180,mkt:'Day-ahead'}],ph:{a:[348,345,351],v:[230,229,231],maxA:500},wnd:{cutIn:3,cutOut:25,ratedSpeed:12,currentSpeed:8.4,forecast:[6.2,6.5,7.1,7.8,8.0,7.5,6.8,5.2,4.8,5.5,6.8,7.2,8.0,8.4,9.1,9.6,10.2,9.8,8.5,7.2,6.1,5.5,5.8,6.2]}},
+      {id:'CRY-001',type:'crypto',installed:'10 Jan 2026',model:'Antminer S21',kw:15,kwh:112,status:'online',rev:1200,avail:94,capex:8500,threshold:-5,sessions:[{on:'03:00',off:'05:30',kwAvg:14,mkt:'Day-ahead'},{on:'13:30',off:'14:15',kwAvg:14,mkt:'Day-ahead'}],ph:{a:[20.3,20.1,20.6],v:[231,230,230],maxA:25},cry:{btcPrice:68420,btcMined:0.0018,hashRate:200,powerEff:75,btcHist:[65200,65800,66100,66400,66900,67200,67500,67100,67800,68100,68400,68200,67900,68100,68420,68300,68500,68100,67800,67500,67900,68200,68400,68420]}},
+      {id:'HYD-001',type:'hydro',installed:'5 May 2023',model:'Ossberger 200kW',kw:200,kwh:4200,status:'online',rev:3400,avail:91.5,capex:160000,threshold:0,sessions:[{on:'00:00',off:'12:00',kwAvg:180,mkt:'Day-ahead'},{on:'14:00',off:'23:59',kwAvg:165,mkt:'Day-ahead'}],ph:{a:[261,258,264],v:[231,230,232],maxA:310},hyd:{reservoirPct:74,flowRate:2.8,headM:12,turbineEff:89,reservoirHist:[82,81,80,79,78,77,76,75,74,73,73,72,72,73,74,74,75,75,74,74,73,73,74,74]}}
+    ]},
+    {id:'S2',name:'Tartu Industrial',loc:'Tartu',created:'3 Sep 2024',eic:'38W-INDUS-5678-Y',balMgr:{name:'Scener',price:9},gf:{t:12.4,d:30.1,r:11.3,e:4.47},gridConn:{consA:160,prodA:200},buildingLoad:22,trader:{name:'KratTrade',desc:'Flexibility — Baltics'},subscription:'GridTanker Basic',subUntil:'15 Jun 2026',balance:147.19,assets:[
+      {id:'GEN-002',type:'genset',installed:'12 Oct 2024',model:'Cummins QSK23',kw:800,kwh:6400,status:'dispatching',rev:12120,avail:93.4,capex:72000,threshold:380,sessions:[{on:'14:00',off:'14:45',kwAvg:720,mkt:'mFRR'},{on:'18:00',off:'18:30',kwAvg:760,mkt:'mFRR'}],ph:{a:[1043,1035,1052],v:[230,231,229],maxA:1200},gen:{maxContKw:700,fuelPct:38,fuelLitres:380,tankLitres:1000,fuelWarnPct:25,workHrs:6210,maintIntervalHrs:500,lastMaintHrs:6000,tempC:82,battV:26.8,lastRefuel:'8 Mar 2026',tempHist:[40,40,39,38,38,37,38,40,45,55,70,78,82,80,76,68,58,48,44,42,41,40,39,38]}}
+    ]}
+  ]},
+  de: { label:'Leistung GmbH — Germany', reg:'HRB 123456', vat:'DE312345678', cc:'DE', zone:'DE-LU', sites:[
+    {id:'S1',name:'Hamburg Port',loc:'Hamburg',created:'20 Jan 2025',eic:'11W-HAFEN-9012-X',balMgr:{name:'Next Kraftwerke',price:15},gf:{t:8.9,d:32.1,r:6.5,e:2.05},gridConn:{consA:400,prodA:630},buildingLoad:85,trader:{name:'Next Kraftwerke',desc:'FCR, aFRR, mFRR'},subscription:'GridTanker Pro',subUntil:'30 Sep 2026',balance:522.66,assets:[
+      {id:'GEN-DE1',type:'genset',installed:'28 Mar 2025',model:'MTU 16V4000',kw:2000,kwh:18000,status:'online',rev:31670,avail:97.2,capex:180000,threshold:320,sessions:[{on:'11:00',off:'11:20',kwAvg:1800,mkt:'FCR'},{on:'14:00',off:'15:00',kwAvg:1900,mkt:'mFRR'},{on:'17:00',off:'17:45',kwAvg:1850,mkt:'aFRR'}],ph:{a:[2754,2739,2768],v:[231,230,232],maxA:3000},gen:{maxContKw:1800,fuelPct:71,fuelLitres:2130,tankLitres:3000,fuelWarnPct:20,workHrs:3150,maintIntervalHrs:1000,lastMaintHrs:2500,tempC:68,battV:27.8,lastRefuel:'14 Mar 2026',tempHist:[38,37,36,36,35,35,36,38,42,52,65,68,70,72,68,62,55,48,42,40,39,38,37,36]}}
+    ]}
+  ]}
+};
+
+// ══════════════════════════════════════════════
+// APP STATE
+// ══════════════════════════════════════════════
+let cW='ee', cP='dashboard', revSite='all', gPeriod='1m', efDetail=false;
+const periodLabels={'24h':'24h','1w':'1 week','1m':'1 month','1y':'1 year'};
+const periodMult={'24h':1/90,'1w':1/12,'1m':1/3,'1y':1};
+function timeSel(cb){ return `<div class="time-sel">${['24h','1w','1m','1y'].map(p=>`<span class="${gPeriod===p?'on':''}" onclick="gPeriod='${p}';${cb}">${p}</span>`).join('')}</div>`; }
+const ct=document.getElementById('ct'), ptEl=document.getElementById('pt'),
+      wSel=document.getElementById('ws-sel'), wizEl=document.getElementById('wiz'),
+      avEl=document.getElementById('av');
+
+function wd() { return W[cW]; }
+let _charts={};
+function destroyCharts(){Object.values(_charts).forEach(c=>{try{c.destroy()}catch(e){}});_charts={};}
+
+// Generate simulated 15-min day-ahead prices for the workspace country
+function genPrices(cc){
+  const base={EE:85,DE:92,NO:45,SE:52,FI:72,LV:88,LT:86,FR:78,NL:80}[cc]||80;
+  const p=[];
+  for(let h=0;h<24;h++)for(let m=0;m<60;m+=15){
+    const peak=(h>=6&&h<=9)||(h>=17&&h<=20);
+    const night=h>=0&&h<5;
+    const v=base+(peak?Math.random()*200+60:night?Math.random()*30-40:Math.random()*80-10);
+    p.push({h,m,v:Math.round(v*10)/10});
+  }
+  return p;
+}
+
+// Build 24h timeline chart for a set of assets
+function buildTimelineChart(canvasId,assets,cc){
+  const ctx=document.getElementById(canvasId);
+  if(!ctx)return;
+  const prices=genPrices(cc);
+  const labels=prices.map(p=>String(p.h).padStart(2,'0')+':'+String(p.m).padStart(2,'0'));
+  const priceVals=prices.map(p=>p.v);
+
+  // Build per-asset power timeline (96 intervals across 24h)
+  const typeColors={genset:'#0F6E56',battery:'#1D9E75',solar:'#5DCAA5',wind:'#085041',crypto:'#04342C',hydro:'#2471a3'};
+  const mktColors={mFRR:'#c0392b',aFRR:'#e67e22',FCR:'#8e44ad','FCR-D':'#6c3483','Day-ahead':'#27ae60',DA:'#27ae60','Intraday':'#2980b9'};
+  const datasets=[];
+
+  // Price line (right Y axis)
+  datasets.push({type:'line',label:'Day-ahead (€/MWh)',data:priceVals,borderColor:'#3a7bd5',backgroundColor:'rgba(58,123,213,.06)',fill:true,borderWidth:1.8,pointRadius:0,stepped:'before',yAxisID:'y1',order:1});
+
+  // Per-asset power bars stacked
+  const assetMap={};
+  assets.forEach(a=>{
+    if(!a.sessions||!a.sessions.length)return;
+    if(!assetMap[a.id])assetMap[a.id]={id:a.id,type:a.type,kw:a.kw,power:new Array(96).fill(null),onPts:new Array(96).fill(null),offPts:new Array(96).fill(null),mkts:new Array(96).fill(null)};
+    const am=assetMap[a.id];
+    a.sessions.forEach(ses=>{
+      const onH=parseInt(ses.on.split(':')[0]),onM=parseInt(ses.on.split(':')[1]);
+      const offH=parseInt(ses.off.split(':')[0]),offM=parseInt(ses.off.split(':')[1]);
+      const onIdx=onH*4+Math.floor(onM/15);
+      let offIdx=offH*4+Math.floor(offM/15);
+      if(offIdx<=onIdx)offIdx=95;
+      const consuming=a.type==='crypto';
+      for(let i=onIdx;i<=Math.min(offIdx,95);i++){
+        am.power[i]=consuming?-(ses.kwAvg||a.kw):(ses.kwAvg||a.kw);
+        am.mkts[i]=ses.mkt||'DA';
+      }
+      am.onPts[onIdx]=consuming?-(ses.kwAvg||a.kw):(ses.kwAvg||a.kw);
+      if(offIdx<=95)am.offPts[offIdx]=consuming?-(ses.kwAvg||a.kw):(ses.kwAvg||a.kw);
+    });
+  });
+
+  Object.values(assetMap).forEach(am=>{
+    const col=typeColors[am.type]||'#1D9E75';
+    datasets.push({type:'bar',label:am.id,data:am.power,backgroundColor:col+'66',borderColor:col,borderWidth:0,borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:3,stack:'power'});
+    datasets.push({type:'line',label:am.id+' ON',data:am.onPts,borderColor:'transparent',pointRadius:6,pointBackgroundColor:'#1D9E75',pointBorderColor:'#fff',pointBorderWidth:2,pointStyle:'circle',showLine:false,yAxisID:'y',order:0});
+    datasets.push({type:'line',label:am.id+' OFF',data:am.offPts,borderColor:'transparent',pointRadius:6,pointBackgroundColor:'#c93c3c',pointBorderColor:'#fff',pointBorderWidth:2,pointStyle:'triangle',showLine:false,yAxisID:'y',order:0});
+  });
+
+  // Market ribbon — colored bar at top showing which market is active
+  const mktData=new Array(96).fill(null);
+  const mktBg=new Array(96).fill('transparent');
+  Object.values(assetMap).forEach(am=>{
+    for(let i=0;i<96;i++){if(am.mkts[i]&&!mktData[i]){mktData[i]=1;mktBg[i]=(mktColors[am.mkts[i]]||'#888')+'44';}}
+  });
+
+  _charts[canvasId]=new Chart(ctx,{type:'bar',data:{labels,datasets},options:{
+    responsive:true,maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:8,weight:'500'},padding:8,usePointStyle:true,pointStyle:'rect'}},
+      tooltip:{callbacks:{label:c=>{
+        if(c.dataset.label==='DA price (€/MWh)')return'Price: €'+c.parsed.y+'/MWh';
+        if(c.dataset.label.includes(' ON')&&c.parsed.y!==null)return c.dataset.label.replace(' ON','')+' ON: '+Math.abs(c.parsed.y)+'kW';
+        if(c.dataset.label.includes(' OFF')&&c.parsed.y!==null)return c.dataset.label.replace(' OFF','')+' OFF';
+        if(c.parsed.y!==null&&!c.dataset.label.includes(' ON')&&!c.dataset.label.includes(' OFF')){
+          const idx=c.dataIndex;const am=Object.values(assetMap).find(x=>x.id===c.dataset.label);
+          const mkt=am?.mkts[idx]||'';return c.dataset.label+': '+Math.abs(c.parsed.y)+'kW'+(mkt?' — '+mkt:'');
+        }return null;
+      }}}},
+    scales:{
+      y:{position:'left',title:{display:true,text:'kW',font:{size:8,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:8},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'},stacked:true},
+      y1:{position:'right',title:{display:true,text:'€/MWh',font:{size:8,weight:'600'},color:'#3a7bd5'},ticks:{font:{size:8},color:'#3a7bd5',callback:v=>'€'+v},grid:{drawOnChartArea:false}},
+      x:{grid:{display:false},stacked:true,ticks:{font:{size:7,weight:'500'},color:'#6b6b6b',maxTicksLimit:16,maxRotation:0}}
+    }
+  }});
+}
+// ── Navigation ──
+function buildNav() {
+  const pages=['dashboard','sites','pooling','revenue','logs','news','users','settings'];
+  const icons={dashboard:'<rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/>',sites:'<path d="M8 1L14 5V11L8 15L2 11V5Z"/>',pooling:'<circle cx="8" cy="8" r="3" stroke-dasharray="2,2"/><circle cx="4" cy="4" r="2"/><circle cx="12" cy="4" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="12" cy="12" r="2"/>',revenue:'<polyline points="1,12 5,6 9,9 15,2"/>',logs:'<rect x="2" y="1" width="12" height="14" rx="2"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/>',news:'<rect x="2" y="2" width="12" height="12" rx="2"/><line x1="5" y1="6" x2="11" y2="6"/><line x1="5" y1="9" x2="9" y2="9"/>',users:'<circle cx="6" cy="5" r="2.5"/><path d="M1 14c0-2.8 2.2-5 5-5s5 2.2 5 5"/>',settings:'<circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/>'};
+  let h=''; const navLabels={dashboard:'Dashboard',sites:'Sites',pooling:'Pooling',revenue:'Revenue',logs:'Logs & alerts',news:'News',users:'Users',settings:'Settings'};
+  pages.forEach(p=>{
+    h+=`<div class="ni ${cP===p?'on':''}" data-p="${p}"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4">${icons[p]}</svg><span>${navLabels[p]||p}</span>${p==='sites'?`<span class="nbg">${wd().sites.length}</span>`:p==='news'?'<span class="nbg">3</span>':''}</div>`;
+  });
+  document.getElementById('nav-list').innerHTML=h;
+  document.querySelectorAll('.ni[data-p]').forEach(n=>n.addEventListener('click',()=>nav(n.dataset.p)));
+}
+
+// ══════════════════════════════════════════════
+// PAGES
+// ══════════════════════════════════════════════
+const R={};
+
+R.dashboard=function(){
+  const w=wd(), aA=w.sites.flatMap(s=>s.assets), tR=aA.reduce((s,a)=>s+a.rev,0), single=w.sites.length===1;
+  const pR=Math.round(tR*periodMult[gPeriod]);
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="font-size:13px;font-weight:600;color:var(--tx)">Overview — ${periodLabels[gPeriod]}</div>${timeSel('R.dashboard()')}</div>`;
+  h+=`<div class="mets"><div class="mc"><div class="ml">Revenue</div><div class="mv">€${pR.toLocaleString()}</div></div><div class="mc"><div class="ml">Sites / Assets</div><div class="mv">${w.sites.length} / ${aA.length}</div></div><div class="mc"><div class="ml">Capacity</div><div class="mv">${(aA.reduce((s,a)=>s+a.kw,0)/1000).toFixed(1)} MW</div></div><div class="mc"><div class="ml">Availability</div><div class="mv">${aA.filter(a=>a.avail>0).length?Math.round(aA.filter(a=>a.avail>0).reduce((s,a)=>s+a.avail,0)/aA.filter(a=>a.avail>0).length*10)/10:0}%</div></div></div>`;
+  if(single){const s=w.sites[0]; h+=`<div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:12px"><div class="fp"><div class="fh"><h2>${s.name} ${s.eic?'<span style="font-size:10px;font-weight:500;color:var(--tx2)">'+s.eic+'</span>':''}</h2><button class="btn" style="font-size:9px;padding:4px 10px;${efDetail?'background:var(--acc);color:#fff;border-color:var(--acc)':''}" onclick="efDetail=!efDetail;R.dashboard()">⚡ Detailed</button></div>${buildEF(s)}<div class="ef-price"><span>Import:</span> €0.${Math.round(80+Math.random()*60)}/kWh <span style="margin:0 6px;color:var(--brd)">|</span> <span>Export:</span> €0.0${Math.round(20+Math.random()*30)}/kWh</div></div>${buildEarnings(s.assets,s.name)}</div>`;}
+  else{h+=`<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px"><div>`;
+    w.sites.forEach(s=>{const sR=s.assets.reduce((a,b)=>a+b.rev,0),st=ss(s);
+      h+=`<div class="fp" style="padding:12px 16px;cursor:pointer" onclick="nav('sites')"><div style="display:flex;justify-content:space-between"><div><div style="font-size:13px;font-weight:600;color:var(--tx)">${s.name} ${s.eic?'<span style="font-size:9px;font-weight:500;color:var(--tx2)">'+s.eic+'</span>':''}</div><div style="display:flex;gap:4px;margin-top:4px">${s.assets.map(a=>AI(a.type,isAc(a.status),'xs')).join('')}</div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--tx2)">${s.trader?.name||''}</span><span class="pill p-dk">€${sR.toLocaleString()}</span>${P(st==='operational'?'online':st)}<span style="color:var(--tx3);font-size:14px">›</span></div></div></div>`;});
+    h+=`</div>${buildEarnings(aA,'All sites')}</div>`;}
+  // 24h Timeline chart
+  h+=`<div class="fp"><div class="fh"><h2>24h timeline — power, markets & prices</h2><span class="phl">Today</span></div><div style="position:relative;height:300px"><canvas id="dashTimeline"></canvas></div></div>`;
+  ct.innerHTML=h;
+  setTimeout(()=>{destroyCharts();buildTimelineChart('dashTimeline',aA,wd().cc||'EE');},100);
+};
+
+R.sites=function(){
+  const w=wd(), pm=periodMult[gPeriod];
+  let h=`<div class="actions-bar"><div style="font-size:13px;font-weight:600;color:var(--tx)">${w.sites.length} sites, ${w.sites.flatMap(s=>s.assets).length} assets — ${periodLabels[gPeriod]}</div><div style="display:flex;gap:6px">${timeSel('R.sites()')}<button class="btn pr" onclick="showSW()">+ Add site</button></div></div>`;
+  w.sites.forEach((s,si)=>{const st=ss(s),sR=Math.round(s.assets.reduce((a,b)=>a+b.rev,0)*pm);
+    h+=`<div class="sc"><div class="shd" onclick="tS(${si})"><div><div class="sn">${s.name} ${s.eic?'<span style="font-size:9px;font-weight:500;color:var(--tx2);margin-left:6px">'+s.eic+'</span>':''}</div><div class="sloc" style="display:flex;gap:4px;margin-top:3px">${s.loc} <span style="margin:0 4px;color:var(--brd)">|</span> ${s.trader?.name||'No trader'} <span style="margin:0 4px;color:var(--brd)">|</span> ${s.assets.map(a=>AI(a.type,isAc(a.status),'xs')).join('')}</div></div>
+    <div class="sr"><span class="pill p-dk">€${sR.toLocaleString()}</span>${P(st==='operational'?'online':st)}<div class="gear-btn" onclick="event.stopPropagation();openSS(${si})" title="Site settings"><svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="var(--tx2)" stroke-width="1.4"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2"/></svg></div><span class="arr" id="sa-${si}">+</span></div></div>
+    <div class="sa hidden" id="sb-${si}"><div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:10px;margin-bottom:10px"><div class="fp" style="margin-bottom:0"><div class="fh"><h2>Energy flow</h2><button class="btn" style="font-size:9px;padding:4px 10px;${efDetail?'background:var(--acc);color:#fff;border-color:var(--acc)':''}" onclick="efDetail=!efDetail;R.sites()">⚡ Detailed</button></div>${buildEF(s)}</div>${buildEarnings(s.assets,s.name)}</div>
+    <div class="fp"><div class="fh"><h2>24h timeline — ${s.name} ${s.eic?'<span style="font-size:9px;font-weight:500;color:var(--tx2)">'+s.eic+'</span>':''}</h2><span class="phl">Today</span></div><div style="position:relative;height:240px"><canvas id="siteChart${si}"></canvas></div></div>`;
+    s.assets.forEach((a,ai)=>{h+=`<div class="ar" onclick="oA(${si},${ai})">${AI(a.type,isAc(a.status),'sm')}<span style="font-weight:600;font-size:11px;min-width:70px;color:var(--tx)">${a.id}</span><span style="color:var(--tx2);font-size:10px;min-width:80px">${a.kw>=1000?(a.kw/1000).toFixed(1)+' MW':a.kw+' kW'}${a.kwh?' / '+a.kwh.toLocaleString()+'kWh':''}</span>${P(a.status)}<span style="font-weight:600;color:var(--accd);font-size:10px;margin-left:auto">€${Math.round(a.rev*pm).toLocaleString()}</span><span style="color:var(--tx3);font-size:14px;margin-left:6px">›</span></div>`;});
+    h+=`<button class="btn" style="margin-top:8px;width:100%;justify-content:center" onclick="event.stopPropagation();showAW(${si})">+ Add asset to ${s.name}</button>`;
+    h+=`</div></div>`;});
+  ct.innerHTML=h;
+};
+
+R.pooling=function(){
+  const w=wd();
+  if(!w._pools) w._pools=[
+    {id:'pool1',name:'mFRR Balancing Pool',market:'mFRR',targetKw:1000,trader:w.sites[0]?.trader?.name||'Not assigned',assets:['GEN-001','BAT-001','HYD-001'],status:'active'},
+    {id:'pool2',name:'FCR Reserve Pool',market:'FCR',targetKw:1000,trader:w.sites[0]?.trader?.name||'Not assigned',assets:['BAT-001','HYD-001','WND-001'],status:'active'}
+  ];
+  const pools=w._pools;
+  const allAssets=w.sites.flatMap(s=>s.assets);
+
+  // Market eligibility rules: which asset types can participate in each market
+  const mktEligible={
+    'mFRR':  {types:['genset','battery','hydro'],note:'≤ 15 min activation — gensets, batteries, hydro'},
+    'aFRR':  {types:['battery','hydro','genset'],note:'≤ 5 min activation — batteries, hydro, fast gensets only',gensetNote:'Genset must have ≤5 min ramp time'},
+    'FCR':   {types:['battery','hydro'],note:'≤ 30 sec activation — batteries and fast hydro only'},
+    'FCR-D': {types:['battery'],note:'≤ 5 sec activation — batteries only'}
+  };
+
+  // Check if asset is eligible for a market
+  function isEligible(assetType,market){
+    const rule=mktEligible[market];
+    if(!rule)return{ok:true,warn:''};
+    if(!rule.types.includes(assetType)){
+      const reasons={
+        solar:'Solar has no controllable dispatch — production depends on weather',
+        wind:'Wind has no controllable dispatch — production depends on weather',
+        crypto:'Crypto miners are consumers, not frequency response providers',
+        genset:market==='FCR'?'Genset ramp time too slow for FCR (needs ≤30 sec)':market==='FCR-D'?'Genset ramp time too slow for FCR-D (needs ≤5 sec)':'Not eligible for this market',
+        hydro:market==='FCR-D'?'Hydro response too slow for FCR-D (needs ≤5 sec)':'Not eligible'
+      };
+      return{ok:false,warn:reasons[assetType]||assetType+' is not eligible for '+market};
+    }
+    // Special case: genset in aFRR needs fast ramp
+    if(assetType==='genset'&&market==='aFRR')return{ok:true,warn:'Genset must have ≤5 min ramp time for aFRR prequalification'};
+    return{ok:true,warn:''};
+  }
+
+  let h=`<div class="actions-bar"><div style="font-size:13px;font-weight:600;color:var(--tx)">Asset pooling — frequency market qualification</div><button class="btn pr" onclick="showCreatePool()">+ Create pool</button></div>`;
+
+  h+=`<div class="fp" style="padding:14px 18px;margin-bottom:14px"><div style="font-size:11px;color:var(--tx2);line-height:1.7">
+    Frequency markets (mFRR, aFRR, FCR) require a <strong>minimum of 1 MW</strong> of controllable capacity. Pooling allows combining multiple smaller assets to reach this threshold.<br><br>
+    <strong>Rules:</strong> All assets in a pool must be operated by the <strong>same trader/aggregator</strong>. Assets on the same grid connection point (site) share one <strong>balance manager</strong> and <strong>cannot be split across different pools</strong> — if one asset from a site is in a pool, all other poolable assets from that site must join the same pool or remain unassigned.
+  </div></div>`;
+
+  // Existing pools
+  pools.forEach((pool,pi)=>{
+    const pAssets=pool.assets.map(aid=>allAssets.find(a=>a.id===aid)).filter(Boolean);
+    const totalKw=pAssets.reduce((s,a)=>s+a.kw,0);
+    const qualified=totalKw>=1000;
+    const pct=Math.min(100,Math.round(totalKw/pool.targetKw*100));
+    const statusCol=qualified?'var(--acc)':'var(--warn)';
+    const hasIncompat=pAssets.some(a=>!isEligible(a.type,pool.market).ok);
+    // Detect cross-pool site conflicts
+    const otherPools=pools.filter((_,oi)=>oi!==pi);
+    const poolSites=new Set(pAssets.map(a=>{const s=w.sites.find(s=>s.assets.some(x=>x.id===a.id));return s?.id;}).filter(Boolean));
+    const hasCrossPool=pAssets.some(a=>{const s=w.sites.find(s=>s.assets.some(x=>x.id===a.id));if(!s)return false;return otherPools.some(op=>op.assets.some(aid=>s.assets.some(x=>x.id===aid)));});
+    // Collect unique BRPs in pool
+    const poolBRPs=[...new Set(pAssets.map(a=>{const s=w.sites.find(s=>s.assets.some(x=>x.id===a.id));return s?.balMgr?.name;}).filter(Boolean))];
+
+    h+=`<div class="fp">
+      <div class="fh"><h2>${pool.name}</h2><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill ${qualified?'p-on':'p-mnt'}">${qualified?'Qualified':'Below 1 MW'}</span><span class="pill p-dk">${pool.market}</span>${hasIncompat?'<span class="pill p-flt">⚠ Incompatible</span>':''}${hasCrossPool?'<span class="pill" style="background:rgba(142,68,173,.1);color:#8e44ad">⚠ Cross-pool conflict</span>':''}</div></div>
+
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px">
+        <div style="text-align:center"><div style="font-size:9px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:2px">Total capacity</div><div style="font-size:18px;font-weight:700;color:${statusCol}">${totalKw>=1000?(totalKw/1000).toFixed(1)+' MW':totalKw+' kW'}</div></div>
+        <div style="text-align:center"><div style="font-size:9px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:2px">Target</div><div style="font-size:18px;font-weight:700;color:var(--tx)">${pool.targetKw>=1000?(pool.targetKw/1000).toFixed(1)+' MW':pool.targetKw+' kW'}</div></div>
+        <div style="text-align:center"><div style="font-size:9px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:2px">Assets / Sites</div><div style="font-size:18px;font-weight:700;color:var(--tx)">${pAssets.length} / ${poolSites.size}</div></div>
+        <div style="text-align:center"><div style="font-size:9px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:2px">Trader</div><div style="font-size:12px;font-weight:600;color:var(--tx);margin-top:4px">${pool.trader}</div></div>
+        <div style="text-align:center"><div style="font-size:9px;color:var(--tx3);text-transform:uppercase;font-weight:600;margin-bottom:2px">Balance mgr</div><div style="font-size:11px;font-weight:600;color:var(--tx);margin-top:4px">${poolBRPs.length===1?poolBRPs[0]:poolBRPs.length>1?poolBRPs.length+' BRPs':'—'}</div></div>
+      </div>
+
+      <div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:9px;color:var(--tx2)">Pool capacity vs 1 MW minimum</span><span style="font-size:9px;font-weight:600;color:${statusCol}">${pct}%</span></div>
+      <div style="background:var(--cbg2);border-radius:4px;height:10px;overflow:hidden"><div style="height:100%;width:${Math.min(pct,100)}%;background:${statusCol};border-radius:4px;position:relative">${qualified?'<div style="position:absolute;right:0;top:0;bottom:0;width:2px;background:var(--accd)"></div>':''}</div></div>
+      <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--tx3);margin-top:2px"><span>0 kW</span><span style="color:var(--tx);font-weight:600">1 MW minimum</span><span>${pool.targetKw>=1000?(pool.targetKw/1000).toFixed(1)+' MW':pool.targetKw+' kW'}</span></div></div>
+
+      ${mktEligible[pool.market]?`<div style="padding:8px 12px;background:rgba(58,123,213,.06);border:1px solid rgba(58,123,213,.15);border-radius:var(--rs);margin-bottom:12px;font-size:10px;color:#2471a3;display:flex;align-items:center;gap:6px"><span style="font-weight:700">ℹ</span> ${pool.market} eligibility: ${mktEligible[pool.market].note}</div>`:''}
+
+      <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Pooled assets</div>`;
+    pAssets.forEach(a=>{
+      const site=w.sites.find(s=>s.assets.some(x=>x.id===a.id));
+      const elig=isEligible(a.type,pool.market);
+      // Check if other assets from same site are in a DIFFERENT pool
+      const siteAssetIds=site?site.assets.map(x=>x.id):[];
+      const conflictPool=otherPools.find(op=>op.assets.some(aid=>siteAssetIds.includes(aid)));
+      const hasConflict=!!conflictPool;
+      const rowBg=hasConflict?'rgba(142,68,173,.06)':(!elig.ok?'rgba(201,60,60,.06)':(elig.warn?'rgba(230,126,34,.06)':'var(--cbg2)'));
+      const rowBorder=hasConflict?'1px solid rgba(142,68,173,.25)':(!elig.ok?'1px solid rgba(201,60,60,.2)':(elig.warn?'1px solid rgba(230,126,34,.2)':'none'));
+      h+=`<div style="display:flex;align-items:flex-start;gap:8px;padding:8px 10px;background:${rowBg};border:${rowBorder};border-radius:var(--rs);margin-bottom:4px">
+        ${AI(a.type,isAc(a.status),'sm')}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px"><div style="font-size:11px;font-weight:600;color:var(--tx)">${a.id}</div>${!elig.ok?'<span class="pill p-flt" style="font-size:7px;padding:2px 6px">⚠ Not eligible</span>':elig.warn?'<span class="pill p-mnt" style="font-size:7px;padding:2px 6px">⚠ Check</span>':''}${hasConflict?'<span class="pill" style="font-size:7px;padding:2px 6px;background:rgba(142,68,173,.1);color:#8e44ad">⚠ Cross-pool</span>':''}</div>
+          <div style="font-size:9px;color:var(--tx2)">${a.model} — ${site?.name||''} ${site?.eic?'('+site.eic+')':''}</div>
+          ${site?.balMgr?`<div style="font-size:8px;color:var(--tx3);margin-top:1px">BRP: ${site.balMgr.name} — €${site.balMgr.price}/MWh</div>`:''}
+          ${!elig.ok?`<div style="font-size:9px;color:var(--alr);margin-top:3px">⚠ ${elig.warn}</div>`:''}
+          ${elig.warn&&elig.ok?`<div style="font-size:9px;color:var(--warn);margin-top:3px">⚠ ${elig.warn}</div>`:''}
+          ${hasConflict?`<div style="font-size:9px;color:#8e44ad;margin-top:3px">⚠ Other assets from ${site?.name||'this site'} are in pool "${conflictPool.name}". All assets on one grid connection must be in the same pool.</div>`:''}
+        </div>
+        <div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:600;color:var(--tx)">${a.kw>=1000?(a.kw/1000).toFixed(1)+' MW':a.kw+' kW'}</div><div style="font-size:8px;color:var(--tx2)">${a.kwh?a.kwh.toLocaleString()+' kWh — ':''} ${a.type}</div></div>
+        <button class="btn" style="font-size:8px;padding:3px 6px;color:var(--alr);border-color:var(--alr);flex-shrink:0" onclick="removeFromPool(${pi},'${a.id}')">✕</button>
+      </div>`;
+    });
+
+    // Add asset dropdown — show eligibility + cross-pool conflict status
+    const available=allAssets.filter(a=>!pool.assets.includes(a.id)&&isAc(a.status));
+    if(available.length){
+      h+=`<div style="margin-top:8px"><select id="pool-add-${pi}" style="font-size:10px;padding:6px 8px;border:1px solid var(--brd);border-radius:var(--rs);font-family:inherit;width:auto" onchange="addToPool(${pi},this.value);this.selectedIndex=0"><option value="">+ Add asset to pool...</option>`;
+      available.forEach(a=>{
+        const site=w.sites.find(s=>s.assets.some(x=>x.id===a.id));
+        const elig=isEligible(a.type,pool.market);
+        const siteIds=site?site.assets.map(x=>x.id):[];
+        const inOther=otherPools.find(op=>op.assets.some(aid=>siteIds.includes(aid)));
+        const blocked=!elig.ok||!!inOther;
+        h+=`<option value="${a.id}" ${blocked?'style="color:#c93c3c"':''}>${a.id} — ${a.type} — ${a.kw}kW (${site?.name||''})${!elig.ok?' ⚠ NOT ELIGIBLE — '+elig.warn:''}${inOther?' ⚠ SITE IN "'+inOther.name+'"':''}</option>`;
+      });
+      h+=`</select></div>`;
+    }
+    h+=`</div>`;
+  });
+
+  // Market requirements info
+  h+=`<div class="fp"><div class="fh"><h2>Frequency market requirements</h2></div>
+  <table class="dt"><thead><tr><th>Market</th><th>Min. capacity</th><th>Activation time</th><th>Duration</th><th>Eligible assets</th></tr></thead><tbody>
+    <tr><td style="font-weight:600">mFRR</td><td>1 MW</td><td>≤ 15 min</td><td>15 min — 1 hour</td><td>Genset, battery, hydro</td></tr>
+    <tr><td style="font-weight:600">aFRR</td><td>1 MW</td><td>≤ 5 min</td><td>Continuous</td><td>Battery, hydro, fast genset</td></tr>
+    <tr><td style="font-weight:600">FCR</td><td>1 MW</td><td>≤ 30 sec</td><td>Continuous</td><td>Battery, fast hydro</td></tr>
+    <tr><td style="font-weight:600">FCR-D</td><td>0.1 MW</td><td>≤ 5 sec</td><td>Continuous</td><td>Battery only</td></tr>
+  </tbody></table>
+  <div style="margin-top:10px;font-size:10px;color:var(--tx2);line-height:1.6">Assets in a pool must share the same trader/aggregator. The trader handles TSO prequalification, bidding, and settlement. Cross-site pooling is allowed within the same bidding zone. Solar, wind, and crypto assets cannot participate in frequency markets as they lack controllable dispatch capability.</div>
+  </div>`;
+
+  ct.innerHTML=h;
+};
+
+window.addToPool=function(pi,aid){
+  if(!aid)return;
+  const w=wd();
+  const pool=w._pools[pi];
+  const allAssets=w.sites.flatMap(s=>s.assets);
+  const asset=allAssets.find(a=>a.id===aid);
+  if(!asset)return;
+
+  // Market eligibility check
+  const mktTypes={'mFRR':['genset','battery','hydro'],'aFRR':['battery','hydro','genset'],'FCR':['battery','hydro'],'FCR-D':['battery']};
+  const allowed=mktTypes[pool.market];
+  if(allowed&&!allowed.includes(asset.type)){
+    const reasons={
+      solar:'Solar panels have no controllable dispatch — production depends on irradiance and cannot be ramped on demand.',
+      wind:'Wind turbines have no controllable dispatch — output depends on wind speed.',
+      crypto:'Crypto miners are electricity consumers, not generators. They cannot provide frequency response to the grid.',
+      genset:pool.market==='FCR'?'Gensets have ramp times of 10-30 seconds minimum, too slow for FCR which requires ≤30 sec full activation including synchronization.':pool.market==='FCR-D'?'Gensets cannot respond within 5 seconds required for FCR-D. Only batteries can achieve this response time.':'Not eligible.',
+      hydro:'Hydro turbines cannot respond within 5 seconds required for FCR-D.'
+    };
+    alert('⚠ Cannot add '+asset.id+' ('+asset.type+') to '+pool.market+' pool:\n\n'+reasons[asset.type]);
+    return;
+  }
+
+  // Cross-pool site conflict check: if any asset from the same site is in another pool, block it
+  const site=w.sites.find(s=>s.assets.some(x=>x.id===aid));
+  if(site){
+    const siteAssetIds=site.assets.map(x=>x.id);
+    const otherPools=w._pools.filter((_,i)=>i!==pi);
+    const conflictPool=otherPools.find(op=>op.assets.some(a=>siteAssetIds.includes(a)));
+    if(conflictPool){
+      alert('⚠ Cannot add '+asset.id+' to "'+pool.name+'".\n\nAnother asset from '+site.name+' (EIC: '+(site.eic||'N/A')+') is already in pool "'+conflictPool.name+'".\n\nAll assets on the same grid connection point share one balance manager ('+(site.balMgr?.name||'unassigned')+') and must be in the same pool.');
+      return;
+    }
+  }
+
+  if(!pool.assets.includes(aid))pool.assets.push(aid);
+  R.pooling();
+};
+window.removeFromPool=function(pi,aid){
+  const pool=wd()._pools[pi];
+  pool.assets=pool.assets.filter(x=>x!==aid);
+  R.pooling();
+};
+window.showCreatePool=function(){
+  const w=wd();
+  const traders=[...new Set(w.sites.map(s=>s.trader?.name).filter(Boolean))];
+  wizEl.classList.remove('hidden');
+  wizEl.innerHTML=`<div style="padding:28px 36px;max-width:560px;margin:0 auto">
+    <div style="font-size:20px;font-weight:600;color:var(--tx);margin-bottom:4px">Create asset pool</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:24px;line-height:1.6">Combine multiple assets to reach the 1 MW minimum for frequency market participation.</p>
+    <div class="wf"><label>Pool name</label><input id="np-name" placeholder="e.g. Flex Pool Beta"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>Target market</label><select id="np-mkt"><option>mFRR</option><option>aFRR</option><option>FCR</option><option>FCR-D</option></select></div>
+      <div class="wf"><label>Trader / Aggregator</label><select id="np-trader">${traders.map(t=>`<option>${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="wf"><label>Target capacity (kW)</label><input id="np-target" type="number" value="1000"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="wizEl.classList.add('hidden')">Cancel</button>
+      <button class="btn acc" onclick="createPool()">Create pool</button>
+    </div>
+  </div>`;
+};
+window.createPool=function(){
+  const w=wd();
+  if(!w._pools)w._pools=[];
+  w._pools.push({
+    id:'pool'+Date.now(),
+    name:document.getElementById('np-name').value||'New Pool',
+    market:document.getElementById('np-mkt').value,
+    targetKw:parseInt(document.getElementById('np-target').value)||1000,
+    trader:document.getElementById('np-trader').value,
+    assets:[],
+    status:'draft'
+  });
+  wizEl.classList.add('hidden');R.pooling();
+};
+
+R.revenue=function(){
+  const w=wd(),fS=revSite==='all'?w.sites:w.sites.filter(s=>s.id===revSite),fA=fS.flatMap(s=>s.assets),pm=periodMult[gPeriod],g=Math.round(fA.reduce((s,a)=>s+a.rev,0)*pm),f=Math.round(g*.15);
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px"><div style="display:flex;flex-wrap:wrap;gap:4px"><span class="site-chip ${revSite==='all'?'on':''}" onclick="revSite='all';R.revenue()">All</span>`;w.sites.forEach(s=>{h+=`<span class="site-chip ${revSite===s.id?'on':''}" onclick="revSite='${s.id}';R.revenue()">${s.name}</span>`;});h+=`</div>${timeSel('R.revenue()')}</div>`;
+  h+=`<div class="mets"><div class="mc"><div class="ml">Gross</div><div class="mv">€${g.toLocaleString()}</div></div><div class="mc"><div class="ml">Fee (15%)</div><div class="mv">€${f.toLocaleString()}</div></div><div class="mc"><div class="ml">Net</div><div class="mv" style="color:var(--accd)">€${(g-f).toLocaleString()}</div></div><div class="mc"><div class="ml">Annual proj.</div><div class="mv">€${Math.round(g/periodMult[gPeriod]*1).toLocaleString()}</div></div></div>`;
+
+  // Two charts side by side: revenue by asset + revenue by market
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="fp"><div class="fh"><h2>Revenue by asset</h2></div><div style="position:relative;height:240px"><canvas id="revByAsset"></canvas></div></div>
+    <div class="fp"><div class="fh"><h2>Revenue by market</h2></div><div style="position:relative;height:240px"><canvas id="revByMarket"></canvas></div></div>
+  </div>`;
+
+  // Asset table
+  h+=`<div class="fp"><div class="fh"><h2>By asset — ${periodLabels[gPeriod]}</h2><span class="phl">Export</span></div><table class="dt"><thead><tr><th>Asset</th><th>Site</th><th>Power / Energy</th><th>Gross</th><th>Net</th></tr></thead><tbody>`;
+  fS.forEach(s=>{s.assets.filter(a=>a.rev>0).forEach(a=>{const aR=Math.round(a.rev*pm),af=Math.round(aR*.15);h+=`<tr><td style="display:flex;align-items:center;gap:6px">${AI(a.type,isAc(a.status),'sm')}<span style="font-weight:600">${a.id}</span></td><td style="color:var(--tx2);font-size:10px">${s.name}</td><td style="font-size:10px">${a.kw>=1000?(a.kw/1000).toFixed(1)+' MW':a.kw+' kW'} / ${a.kwh?a.kwh.toLocaleString()+' kWh':'—'}</td><td>€${aR.toLocaleString()}</td><td style="font-weight:600;color:var(--accd)">€${(aR-af).toLocaleString()}</td></tr>`;});});
+  h+=`</tbody></table></div>`;
+
+  // Monthly revenue chart
+  h+=`<div class="fp"><div class="fh"><h2>Monthly revenue trend</h2></div><div style="position:relative;height:220px"><canvas id="revChart"></canvas></div></div>`;
+  ct.innerHTML=h;
+
+  setTimeout(()=>{destroyCharts();
+    const typeColors={genset:'#0F6E56',battery:'#1D9E75',solar:'#d4880a',wind:'#085041',crypto:'#04342C',hydro:'#2471a3'};
+    const mktColors={mFRR:'#c0392b',aFRR:'#e67e22',FCR:'#8e44ad','FCR-D':'#6c3483','Day-ahead':'#27ae60',Intraday:'#2980b9',Charge:'#3a7bd5'};
+
+    // ── Revenue by asset chart (horizontal bars) ──
+    const assetCtx=document.getElementById('revByAsset');
+    if(assetCtx){
+      const assetData=[];
+      fS.forEach(s=>{s.assets.forEach(a=>{
+        const r=Math.round(a.rev*pm);
+        if(r>0) assetData.push({id:a.id,type:a.type,rev:r,kw:a.kw,kwh:a.kwh||0});
+      });});
+      assetData.sort((a,b)=>b.rev-a.rev);
+      if(!assetData.length){assetData.push({id:'No data',type:'genset',rev:0,kw:0,kwh:0});}
+      _charts.revAsset=new Chart(assetCtx,{type:'bar',data:{
+        labels:assetData.map(d=>d.id),
+        datasets:[{
+          label:'Revenue (€)',
+          data:assetData.map(d=>d.rev),
+          backgroundColor:assetData.map(d=>typeColors[d.type]||'#1D9E75'),
+          borderRadius:5,
+          barPercentage:.6
+        }]
+      },options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){const d=assetData[c.dataIndex];return'€'+d.rev.toLocaleString()+' — '+d.kw+'kW / '+d.kwh.toLocaleString()+'kWh';}}}},scales:{x:{beginAtZero:true,ticks:{callback:v=>v>=1000?'€'+Math.round(v/1000)+'k':'€'+v,font:{size:8},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},y:{grid:{display:false},ticks:{font:{size:9,weight:'600'},color:'#6b6b6b'}}}}});
+    }
+
+    // ── Revenue by market chart ──
+    const mktCtx=document.getElementById('revByMarket');
+    if(mktCtx){
+      // Aggregate revenue by market from session data
+      const mktRev={};
+      fS.forEach(s=>{s.assets.forEach(a=>{
+        const aRev=Math.round(a.rev*pm);
+        const sessions=a.sessions||[];
+        const dispatchSessions=sessions.filter(ses=>ses.mkt&&ses.mkt!=='Charge');
+        if(dispatchSessions.length===0){
+          mktRev['Day-ahead']=(mktRev['Day-ahead']||0)+aRev;
+        } else {
+          const perSes=aRev/dispatchSessions.length;
+          dispatchSessions.forEach(ses=>{
+            const mkt=ses.mkt||'Day-ahead';
+            mktRev[mkt]=(mktRev[mkt]||0)+Math.round(perSes);
+          });
+        }
+      });});
+      const mktLabels=Object.keys(mktRev).sort((a,b)=>mktRev[b]-mktRev[a]);
+      const mktVals=mktLabels.map(m=>mktRev[m]);
+      const mktCols=mktLabels.map(m=>mktColors[m]||'#888');
+
+      _charts.revMkt=new Chart(mktCtx,{type:'doughnut',data:{
+        labels:mktLabels,
+        datasets:[{data:mktVals,backgroundColor:mktCols,borderWidth:2,borderColor:'#fff'}]
+      },options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'right',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:10,font:{size:9,weight:'500'},padding:8,color:'#6b6b6b'}},tooltip:{callbacks:{label:function(c){const total=c.dataset.data.reduce((a,b)=>a+b,0);const pct=Math.round(c.parsed/total*100);return c.label+': €'+c.parsed.toLocaleString()+' ('+pct+'%)';}}}}}});
+    }
+
+    // ── Monthly revenue trend ──
+    const ctx=document.getElementById('revChart');
+    if(ctx){
+      const months=['Oct','Nov','Dec','Jan','Feb','Mar'];
+      const base=Math.round(g/6);
+      const vals=months.map((_,i)=>Math.round(base*(0.6+i*0.15)+(Math.random()*600-300)));
+      _charts.rev=new Chart(ctx,{type:'bar',data:{labels:months,datasets:[
+        {label:'Net',data:vals.map(v=>Math.round(v*.85)),backgroundColor:'#0F6E56',borderRadius:5,barPercentage:.5},
+        {label:'Fee',data:vals.map(v=>Math.round(v*.15)),backgroundColor:'#9FE1CB',borderRadius:5,barPercentage:.5}
+      ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:9,weight:'500'},color:'#6b6b6b'}}},scales:{y:{beginAtZero:true,stacked:true,ticks:{callback:v=>'€'+Math.round(v/1000)+'k',font:{size:8},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},x:{stacked:true,grid:{display:false},ticks:{font:{size:9},color:'#6b6b6b'}}}}});
+    }
+  },100);
+};
+
+R.logs=function(){
+  if(!window._logsTab)window._logsTab='events';
+  const tab=window._logsTab;
+
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+    <div style="display:flex;gap:6px">
+      <button class="btn ${tab==='events'?'pr':''}" onclick="_logsTab='events';R.logs()">Event log</button>
+      <button class="btn ${tab==='notifications'?'pr':''}" onclick="_logsTab='notifications';R.logs()">Notification rules</button>
+    </div>
+    ${tab==='events'?timeSel('R.logs()'):''}
+  </div>`;
+
+  if(tab==='events'){
+    // Event log
+    const logs=[];const w=wd();
+    w.sites.forEach(s=>{s.assets.forEach(a=>{
+      a.sessions.forEach(ses=>{
+        logs.push({time:ses.on,type:'ON',asset:a.id,atype:a.type,site:s.name,mkt:ses.mkt||'',detail:`${a.model} started — ${ses.kwAvg||a.kw} kW via ${ses.mkt||'Day-ahead'}`});
+        logs.push({time:ses.off,type:'OFF',asset:a.id,atype:a.type,site:s.name,mkt:ses.mkt||'',detail:`${a.model} stopped`});
+      });
+      if(a.status==='fault')logs.push({time:'08:22',type:'Alarm',asset:a.id,atype:a.type,site:s.name,detail:'Communication lost — device offline'});
+      if(a.type==='battery')logs.push({time:'12:30',type:'SOC',asset:a.id,atype:a.type,site:s.name,detail:'Battery SOC dropped below 25% — 22%'});
+      if(a.type==='genset')logs.push({time:'14:45',type:'Fuel',asset:a.id,atype:a.type,site:s.name,detail:'Fuel level at 30% — refill recommended'});
+    })});
+    logs.sort((a,b)=>b.time.localeCompare(a.time));
+
+    const typeColors={ON:'var(--acc)',OFF:'#c93c3c',Alarm:'#c93c3c',SOC:'#e67e22',Fuel:'#e67e22',Warning:'#d4880a'};
+    const typeIcons={ON:'●',OFF:'■',Alarm:'⚠',SOC:'◐',Fuel:'⛽',Warning:'△'};
+
+    h+=`<div class="fp"><div class="fh"><h2>${logs.length} events</h2><span class="phl">Export CSV</span></div>`;
+    logs.forEach(l=>{
+      const dc=typeColors[l.type]||'var(--tx3)';
+      h+=`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid var(--brd)">
+        <span style="width:10px;height:10px;border-radius:${l.type==='Alarm'||l.type==='Warning'?'2px':'50%'};background:${dc};flex-shrink:0;margin-top:3px"></span>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:600;color:var(--tx);min-width:40px">${l.time}</span>
+            <span class="pill" style="background:${dc}15;color:${dc}">${l.type}</span>
+            <span style="font-size:11px;font-weight:600;color:var(--tx)">${l.asset}</span>
+            ${l.mkt?`<span class="pill p-dk" style="font-size:7px;padding:2px 6px">${l.mkt}</span>`:''}
+          </div>
+          <div style="font-size:10px;color:var(--tx2);margin-top:3px">${l.detail}</div>
+        </div>
+        <span style="font-size:9px;color:var(--tx3);flex-shrink:0;white-space:nowrap">${l.site}</span>
+      </div>`;
+    });
+    h+=`</div>`;
+
+  } else {
+    // Notification rules
+    if(!wd()._notifRules) wd()._notifRules=[
+      {id:'n1',event:'Alarm / Fault',desc:'Device goes offline or reports a hardware fault',email:true,mobile:true,enabled:true},
+      {id:'n2',event:'Switch ON',desc:'Any asset is activated for dispatch or production',email:false,mobile:true,enabled:true},
+      {id:'n3',event:'Switch OFF',desc:'Asset session ends — dispatch or production stopped',email:false,mobile:false,enabled:false},
+      {id:'n4',event:'SOC below threshold',desc:'Battery state of charge drops below configured minimum',email:true,mobile:true,enabled:true},
+      {id:'n5',event:'Fuel level low',desc:'Genset fuel tank drops below configured minimum level',email:true,mobile:true,enabled:true},
+      {id:'n6',event:'Device offline',desc:'No communication from device for more than 5 minutes',email:true,mobile:true,enabled:true},
+      {id:'n7',event:'Negative DA price activation',desc:'Crypto miner or flexible load starts due to negative day-ahead market price',email:false,mobile:true,enabled:true},
+      {id:'n8',event:'Balancing market dispatch',desc:'Asset dispatched on mFRR, aFRR, or FCR balancing market',email:true,mobile:true,enabled:true},
+      {id:'n9',event:'Revenue milestone',desc:'Daily, weekly, or monthly revenue target achieved',email:true,mobile:false,enabled:false},
+      {id:'n10',event:'Grid fee change',desc:'DSO announces updated transmission or distribution fees',email:true,mobile:false,enabled:false}
+    ];
+    const rules=wd()._notifRules;
+
+    h+=`<div class="fp"><div class="fh"><h2>Notification rules</h2></div>
+    <div style="font-size:10px;color:var(--tx2);margin-bottom:16px;line-height:1.5">Configure which events trigger notifications and how you receive them. Notifications are sent to all workspace admins and the asset's assigned owner.</div>
+    <table class="dt"><thead><tr><th style="width:30%">Event</th><th>Description</th><th style="text-align:center;width:60px">Email</th><th style="text-align:center;width:60px">Mobile</th><th style="text-align:center;width:60px">Active</th></tr></thead><tbody>`;
+
+    rules.forEach((r,ri)=>{
+      const evColors={'Alarm / Fault':'#c93c3c','Switch ON':'var(--acc)','Switch OFF':'#888','SOC below threshold':'#e67e22','Fuel level low':'#e67e22','Device offline':'#c93c3c','Negative DA price activation':'#04342C','Balancing market dispatch':'#3a7bd5','Revenue milestone':'var(--acc)','Grid fee change':'#8e44ad'};
+      const ec=evColors[r.event]||'var(--tx2)';
+      h+=`<tr style="opacity:${r.enabled?'1':'.5'}">
+        <td><div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:${ec};flex-shrink:0"></span><span style="font-weight:600;font-size:11px">${r.event}</span></div></td>
+        <td style="font-size:10px;color:var(--tx2)">${r.desc}</td>
+        <td style="text-align:center"><div style="width:32px;height:17px;background:${r.email?'#3a7bd5':'var(--brd)'};border-radius:9px;position:relative;cursor:pointer;margin:0 auto" onclick="wd()._notifRules[${ri}].email=!wd()._notifRules[${ri}].email;R.logs()"><div style="width:13px;height:13px;background:#fff;border-radius:50%;position:absolute;top:2px;${r.email?'right:2px':'left:2px'}"></div></div></td>
+        <td style="text-align:center"><div style="width:32px;height:17px;background:${r.mobile?'var(--acc)':'var(--brd)'};border-radius:9px;position:relative;cursor:pointer;margin:0 auto" onclick="wd()._notifRules[${ri}].mobile=!wd()._notifRules[${ri}].mobile;R.logs()"><div style="width:13px;height:13px;background:#fff;border-radius:50%;position:absolute;top:2px;${r.mobile?'right:2px':'left:2px'}"></div></div></td>
+        <td style="text-align:center"><div style="width:32px;height:17px;background:${r.enabled?'var(--acc)':'var(--brd)'};border-radius:9px;position:relative;cursor:pointer;margin:0 auto" onclick="wd()._notifRules[${ri}].enabled=!wd()._notifRules[${ri}].enabled;R.logs()"><div style="width:13px;height:13px;background:#fff;border-radius:50%;position:absolute;top:2px;${r.enabled?'right:2px':'left:2px'}"></div></div></td>
+      </tr>`;
+    });
+    h+=`</tbody></table></div>`;
+
+    // Delivery settings
+    h+=`<div class="fp"><div class="fh"><h2>Delivery settings</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Email notifications</div>
+        <div class="wf"><label>Primary email</label><input value="sander@gridtanker.io"></div>
+        <div class="wf"><label>CC (optional)</label><input value="" placeholder="e.g. alerts@company.com"></div>
+        <div class="wf"><label>Digest frequency</label><select><option>Instant (per event)</option><option>Hourly digest</option><option selected>Daily digest</option><option>Weekly digest</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Mobile push notifications</div>
+        <div class="wf"><label>Phone number</label><input value="+372 5123 4567"></div>
+        <div class="wf"><label>Push delivery</label><select><option selected>Instant (per event)</option><option>Batched (max 1/hour)</option></select></div>
+        <div style="padding:10px;background:var(--cbg2);border-radius:var(--rs);font-size:10px;color:var(--tx2);line-height:1.5">Download the GridTanker mobile app to receive push notifications on your phone. Available on iOS and Android.</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn acc">Save notification settings</button></div>
+    </div>`;
+  }
+  ct.innerHTML=h;
+};
+
+R.news=function(){
+  const cc=wd().cc||'EE';
+  const productNews=[
+    {d:'16 Mar 2026',t:'3-phase monitoring with gauge rings',cat:'Product',b:'Each asset now shows real-time L1/L2/L3 current and voltage in detailed energy flow view.',full:'The detailed view button on the energy flow diagram now reveals per-phase gauge rings for every asset. Each ring shows the current utilization as a colored arc (L1 red, L2 green, L3 blue) against the maximum rated capacity, with voltage displayed inside. Current values are calculated from actual power output using I = P/(3×V) for balanced 3-phase systems. The building consumption node also shows its phase data. Grid connection fuse sizes (consumption and production) are displayed on the central hub.'},
+    {d:'15 Mar 2026',t:'Site settings with billing & partner services',cat:'Product',b:'Each site now has subscription, trader, account balance, and billing history.',full:'Site settings are accessible via the gear icon on each site card. The settings panel includes: subscription plan selection (Basic/Pro/Enterprise), partner/trader service selection from country-specific providers, account balance with full transaction history (income, service fees, payouts), billing history with invoice numbers, and grid connection parameters (consumption fuse, production fuse, building load). Each site can have exactly one trader since all assets at one grid connection point use the same flexibility aggregator.'},
+    {d:'14 Mar 2026',t:'Live energy flow diagrams',cat:'Product',b:'Animated power flow between assets with direction based on net production vs consumption.',full:'The energy flow diagram shows all connected assets arranged around a central GT hub. Green dots animate along connection lines from generating assets (genset, solar, wind, battery) toward the hub. Orange dots flow from hub to consuming nodes (building, crypto miners). Blue dots show grid import or export based on the net power balance. The hub displays the total net power and whether the site is exporting or importing. A building consumption node represents the constant load that is always negative.'},
+    {d:'10 Mar 2026',t:'Crypto mining for negative prices',cat:'Product',b:'New asset type activates when electricity price drops below configurable threshold.',full:'Crypto mining assets (e.g. Antminer S21) can be added to any site. They activate automatically when the ENTSO-E day-ahead market price falls below the asset\'s threshold (default ≤ €-5/MWh). This turns negative electricity prices into mining revenue. Each miner shows as a consumer in the energy flow with power flowing from the hub. The threshold is configurable per asset in the asset detail view.'},
+    {d:'5 Mar 2026',t:'Multi-workspace & ENTSO-E zones',cat:'Product',b:'Create workspaces across 28 European countries with correct trading zones.',full:'Each workspace represents a legal entity in a specific ENTSO-E country. Countries with multiple bidding zones (Norway: 5, Sweden: 4, Italy: 6, Denmark: 2) show zone selection during workspace creation. Partner/trader services are filtered by country. Grid fees, tax rates, and TSO connections vary per workspace. The workspace selector in the sidebar allows instant switching between entities.'}
+  ];
+  const marketNews={
+    EE:[
+      {d:'14 Mar 2026',t:'Elektrilevi announces 12% grid fee increase from July 2026',cat:'Grid',b:'Estonia\'s largest DSO raises distribution tariffs citing infrastructure investment needs.',full:'Elektrilevi, which operates 90% of Estonia\'s distribution network, has submitted a tariff increase application to the Competition Authority. The proposed 12% increase would raise the average distribution fee from €28.6/MWh to €32.0/MWh effective July 1, 2026. The company cites €180M in planned grid modernization investments over the next 3 years, including smart meter rollout and renewable energy connection capacity expansion. For GridTanker customers, this means grid fee parameters in site settings should be updated after the change takes effect.'},
+      {d:'11 Mar 2026',t:'Estonian wind power production hits record 48% of demand',cat:'Market',b:'Storm Helmi drives wind generation to 1.2 GW, covering nearly half of national consumption.',full:'During storm Helmi on March 10-11, Estonian wind farms generated a record 1.2 GW of power, covering 48% of national demand. Nord Pool day-ahead prices in the EE bidding zone dropped to -€15/MWh during the overnight hours, triggering activation of flexibility assets and crypto mining operations connected through platforms like GridTanker. The event demonstrates the growing importance of demand-side flexibility as renewable penetration increases.'},
+      {d:'7 Mar 2026',t:'Elering opens mFRR capacity market for Q3 2026',cat:'Regulation',b:'TSO invites aggregators to bid for manual frequency restoration reserve contracts.',full:'Elering has opened the procurement process for mFRR capacity for Q3 2026 (July-September). Aggregators can submit bids for up-regulation capacity (minimum 1 MW) with delivery in the Estonian control area. The tender deadline is April 15, 2026. Eesti Energia Trading and KratTrade, both available as partner services on GridTanker, have confirmed participation. Asset owners with qualifying gensets and batteries connected through GridTanker are automatically eligible through their selected trader.'}
+    ],
+    DE:[
+      {d:'13 Mar 2026',t:'Germany announces €3 billion grant for commercial EV fleet transition',cat:'Policy',b:'Federal Ministry allocates funding for businesses converting delivery and logistics fleets.',full:'The German Federal Ministry for Economic Affairs has announced a €3 billion grant program to accelerate the transition of commercial vehicle fleets to electric. The program targets logistics companies, delivery services, and public transit operators with subsidies covering up to 40% of vehicle purchase costs and 60% of charging infrastructure. For GridTanker customers in Germany, the program creates opportunities to integrate fleet charging as a flexible load that can participate in FCR and aFRR markets through aggregators like Next Kraftwerke.'},
+      {d:'10 Mar 2026',t:'Negative prices hit 340 hours YTD in DE-LU zone',cat:'Market',b:'Record renewable output pushes German wholesale prices below zero for 14% of hours in 2026.',full:'The DE-LU bidding zone has recorded 340 hours of negative wholesale electricity prices in the first 10 weeks of 2026, a 45% increase compared to the same period in 2025. Solar and wind generation surpluses during weekends and holidays are the primary driver. For asset owners, this creates significant revenue opportunities through flexibility services and strategic load shifting. GridTanker\'s crypto mining feature is specifically designed to monetize these negative price periods.'},
+      {d:'5 Mar 2026',t:'50Hertz and TenneT expand FCR prequalification to battery storage',cat:'Regulation',b:'German TSOs simplify frequency containment reserve access for BESS operators.',full:'TSOs 50Hertz and TenneT have announced streamlined prequalification procedures for battery energy storage systems (BESS) participating in FCR markets. The new rules reduce minimum bid size from 1 MW to 0.5 MW and allow symmetric product splits. Aggregators like Next Kraftwerke and Statkraft can now pool smaller battery assets for FCR delivery. GridTanker customers with battery assets of 500 kW or above are automatically eligible through their connected trader.'}
+    ],
+    _default:[
+      {d:'12 Mar 2026',t:'ENTSO-E publishes 2026 Ten-Year Network Development Plan',cat:'Industry',b:'Major cross-border transmission investments planned across Europe.',full:'ENTSO-E has published the 2026 edition of its Ten-Year Network Development Plan (TYNDP), outlining €42 billion in cross-border transmission investments across Europe. Key projects include the North Sea Wind Power Hub, Baltic synchronization completion, and expanded Nordic-Continental interconnectors. The plan highlights growing need for distributed flexibility to manage variable renewable generation, creating opportunities for behind-the-meter assets managed through platforms like GridTanker.'},
+      {d:'8 Mar 2026',t:'EU Electricity Market Design reform enters force',cat:'Regulation',b:'New rules strengthen position of flexibility aggregators and demand response.',full:'The reformed EU Electricity Market Design regulation has entered into force, introducing several provisions that benefit flexibility asset owners. Key changes include: mandatory independent aggregator access in all member states, standardized baseline methodologies for demand response, simplified prequalification for reserves markets, and consumer rights to share energy within energy communities. The reform creates a more level playing field for behind-the-meter assets participating in wholesale and balancing markets.'}
+    ]
+  };
+  const mNews=marketNews[cc]||marketNews._default;
+  const country=ENTSOE[cc]?.name||'Europe';
+
+  let h=`<div style="display:flex;gap:8px;margin-bottom:14px">
+    <button class="btn ${!newsTab||newsTab==='all'?'pr':''}" onclick="newsTab='all';R.news()">All</button>
+    <button class="btn ${newsTab==='product'?'pr':''}" onclick="newsTab='product';R.news()">Product updates</button>
+    <button class="btn ${newsTab==='market'?'pr':''}" onclick="newsTab='market';R.news()">${country} market</button>
+  </div>`;
+
+  const allNews=[];
+  if(!newsTab||newsTab==='all'||newsTab==='product') productNews.forEach(n=>allNews.push(n));
+  if(!newsTab||newsTab==='all'||newsTab==='market') mNews.forEach(n=>allNews.push(n));
+  allNews.sort((a,b)=>b.d.localeCompare(a.d));
+
+  allNews.forEach((n,idx)=>{
+    const catCol={Product:'var(--acc)',Grid:'#e67e22',Market:'#3a7bd5',Regulation:'#8e44ad',Policy:'#c0392b',Industry:'#555'}[n.cat]||'#555';
+    h+=`<div class="fp" style="padding:14px 18px;cursor:pointer" onclick="toggleNews(${idx})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:9px;color:var(--tx3)">${n.d}</span>
+            <span class="pill" style="background:${catCol}18;color:${catCol}">${n.cat}</span>
+          </div>
+          <div style="font-size:14px;font-weight:600;color:var(--tx);margin-bottom:4px">${n.t}</div>
+          <div style="font-size:11px;color:var(--tx2);line-height:1.6">${n.b}</div>
+        </div>
+        <span style="color:var(--tx3);font-size:16px;flex-shrink:0;margin-left:10px" id="nchev${idx}">›</span>
+      </div>
+      <div class="hidden" id="nfull${idx}" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--brd)">
+        <div style="font-size:12px;color:var(--tx);line-height:1.7">${n.full||n.b}</div>
+      </div>
+    </div>`;
+  });
+  ct.innerHTML=h;
+};
+window.newsTab='all';
+window.toggleNews=function(idx){
+  const el=document.getElementById('nfull'+idx);
+  const ch=document.getElementById('nchev'+idx);
+  if(el){el.classList.toggle('hidden');ch.textContent=el.classList.contains('hidden')?'›':'⌄';}
+};
+
+R.users=function(){
+  const w=wd();
+  if(!w._users) w._users=[
+    {id:'u1',name:'Sander Vahtras',email:'sander@gridtanker.io',role:'admin',sites:'all',assets:'all',status:'active',last:'Now'},
+    {id:'u2',name:'Ahto Pärl',email:'ahto@gridtanker.io',role:'owner',sites:w.sites.map(s=>s.id),assets:'all',status:'active',last:'2h ago'},
+    {id:'u3',name:'Peeter Raamat',email:'peeter@gridtanker.io',role:'viewer',sites:[w.sites[0]?.id].filter(Boolean),assets:w.sites[0]?.assets?.slice(0,3).map(a=>a.id)||[],status:'active',last:'1d ago'}
+  ];
+  const users=w._users;
+  const roleCol={admin:'p-dk',owner:'p-on',viewer:'p-pnd'};
+  const roleLbl={admin:'Admin',owner:'Owner',viewer:'Viewer'};
+
+  let h=`<div class="fp"><div class="fh"><h2>Users & access management</h2><button class="btn pr" onclick="showInvite()">+ Invite user</button></div>
+  <div style="font-size:10px;color:var(--tx2);margin-bottom:14px;line-height:1.5">Manage who has access to this workspace. Admin has full access. Owner can manage sites and assets. Viewer has read-only access to assigned sites and assets.</div>
+  <table class="dt"><thead><tr><th>User</th><th>Role</th><th>Sites</th><th>Assets</th><th>Last active</th><th></th></tr></thead><tbody>`;
+  users.forEach((u,ui)=>{
+    const siteLbl=u.sites==='all'?'All sites':u.sites.length+' site'+(u.sites.length!==1?'s':'');
+    const assetLbl=u.assets==='all'?'All assets':(typeof u.assets==='number'?u.assets:u.assets.length)+' asset'+(((typeof u.assets==='number'?u.assets:u.assets.length)!==1)?'s':'');
+    h+=`<tr>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#fff;flex-shrink:0">${u.name.split(' ').map(n=>n[0]).join('')}</div><div><div style="font-weight:600">${u.name}</div><div style="font-size:9px;color:var(--tx2)">${u.email}</div></div></div></td>
+      <td><span class="pill ${roleCol[u.role]||'p-pnd'}">${roleLbl[u.role]||u.role}</span></td>
+      <td style="font-size:10px">${siteLbl}</td>
+      <td style="font-size:10px">${assetLbl}</td>
+      <td style="font-size:10px;color:var(--tx2)">${u.last||'—'}</td>
+      <td><button class="btn" style="font-size:8px;padding:3px 8px" onclick="editUserAccess(${ui})">Edit access</button></td>
+    </tr>`;
+  });
+  h+=`</tbody></table></div>`;
+  ct.innerHTML=h;
+};
+
+window.editUserAccess=function(ui){
+  const w=wd(),u=w._users[ui];
+  const isAdmin=u.role==='admin';
+  let h=`<div style="font-size:11px;color:var(--acc);cursor:pointer;margin-bottom:12px;font-weight:500" onclick="nav('users')">← Back to users</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px"><div style="width:44px;height:44px;border-radius:50%;background:var(--acc);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:#fff">${u.name.split(' ').map(n=>n[0]).join('')}</div><div><div style="font-size:18px;font-weight:600;color:var(--tx)">${u.name}</div><div style="font-size:11px;color:var(--tx2)">${u.email}</div></div></div>`;
+
+  // Role selector
+  h+=`<div class="fp"><div class="fh"><h2>Role</h2></div>`;
+  ['admin','owner','viewer'].forEach(role=>{
+    const sel=u.role===role;
+    const desc={admin:'Full access to all sites, assets, settings, and user management.',owner:'Can manage assigned sites and their assets. Cannot change workspace settings.',viewer:'Read-only access to assigned sites and assets. Cannot modify anything.'}[role];
+    h+=`<div style="border:1.5px solid ${sel?'var(--acc)':'var(--brd)'};border-radius:var(--rs);padding:12px 14px;margin-bottom:6px;cursor:pointer;${sel?'background:var(--accl)':''}" onclick="setUserRole(${ui},'${role}')">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div><div style="font-size:12px;font-weight:600;color:var(--tx)">${role[0].toUpperCase()+role.slice(1)}</div><div style="font-size:10px;color:var(--tx2);margin-top:2px">${desc}</div></div>
+        ${sel?'<span class="pill p-on">Current</span>':''}
+      </div></div>`;
+  });
+  h+=`</div>`;
+
+  // Site access
+  h+=`<div class="fp"><div class="fh"><h2>Site access</h2></div>`;
+  if(isAdmin||u.role==='admin'){
+    h+=`<div style="padding:12px;background:var(--cbg2);border-radius:var(--rs);font-size:11px;color:var(--tx2)">Admin role has access to all sites automatically.</div>`;
+  } else {
+    const allSites=u.sites==='all';
+    h+=`<div style="margin-bottom:10px"><label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:11px;font-weight:500;color:var(--tx)"><input type="checkbox" ${allSites?'checked':''} onchange="toggleAllSites(${ui},this.checked)" style="accent-color:var(--acc)"> Grant access to all sites</label></div>`;
+    if(!allSites){
+      w.sites.forEach(s=>{
+        const hasSite=u.sites.includes(s.id);
+        h+=`<div style="border:1px solid ${hasSite?'var(--acc)':'var(--brd)'};border-radius:var(--rs);padding:10px 14px;margin-bottom:6px;${hasSite?'background:var(--accl)':''}">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+            <input type="checkbox" ${hasSite?'checked':''} onchange="toggleSiteAccess(${ui},'${s.id}',this.checked)" style="accent-color:var(--acc)">
+            <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--tx)">${s.name}</div><div style="font-size:9px;color:var(--tx2)">${s.loc} — ${s.assets.length} assets</div></div>
+          </label>`;
+        // Asset-level access within this site
+        if(hasSite){
+          const allAssets=u.assets==='all';
+          h+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--brd)"><div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:6px">Asset access</div>`;
+          s.assets.forEach(a=>{
+            const hasAsset=allAssets||u.assets.includes(a.id);
+            h+=`<label style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer;font-size:10px;color:var(--tx)">
+              <input type="checkbox" ${hasAsset?'checked':''} onchange="toggleAssetAccess(${ui},'${a.id}',this.checked)" style="accent-color:var(--acc)">
+              ${AI(a.type,isAc(a.status),'xs')}
+              <span style="font-weight:500">${a.id}</span>
+              <span style="color:var(--tx2);font-size:9px">${a.model} — ${a.kw>=1000?(a.kw/1000).toFixed(1)+' MW':a.kw+' kW'}</span>
+            </label>`;
+          });
+          h+=`</div>`;
+        }
+        h+=`</div>`;
+      });
+    }
+  }
+  h+=`</div>`;
+
+  // Actions
+  h+=`<div style="display:flex;gap:8px;justify-content:space-between;margin-top:8px"><button class="btn" style="color:var(--alr);border-color:var(--alr)" onclick="if(confirm('Remove user?')){wd()._users.splice(${ui},1);nav('users')}">Remove user</button><button class="btn acc" onclick="nav('users')">Save & close</button></div>`;
+
+  avEl.innerHTML=h;avEl.classList.remove('hidden');
+};
+
+window.setUserRole=function(ui,role){wd()._users[ui].role=role;if(role==='admin'){wd()._users[ui].sites='all';wd()._users[ui].assets='all';}editUserAccess(ui);};
+window.toggleAllSites=function(ui,checked){const u=wd()._users[ui];u.sites=checked?'all':[];u.assets=checked?'all':[];editUserAccess(ui);};
+window.toggleSiteAccess=function(ui,sid,checked){const u=wd()._users[ui];if(u.sites==='all')u.sites=wd().sites.map(s=>s.id);if(checked){if(!u.sites.includes(sid))u.sites.push(sid);const s=wd().sites.find(x=>x.id===sid);if(s&&u.assets!=='all'){s.assets.forEach(a=>{if(!u.assets.includes(a.id))u.assets.push(a.id)});}}else{u.sites=u.sites.filter(x=>x!==sid);if(u.assets!=='all'){const s=wd().sites.find(x=>x.id===sid);if(s)u.assets=u.assets.filter(aid=>!s.assets.some(a=>a.id===aid));}}editUserAccess(ui);};
+window.toggleAssetAccess=function(ui,aid,checked){const u=wd()._users[ui];if(u.assets==='all')u.assets=wd().sites.flatMap(s=>s.assets.map(a=>a.id));if(checked){if(!u.assets.includes(aid))u.assets.push(aid);}else{u.assets=u.assets.filter(x=>x!==aid);}editUserAccess(ui);};
+
+window.showInvite=function(){
+  wizEl.classList.remove('hidden');
+  const w=wd();
+  let siteOpts=w.sites.map(s=>`<label style="display:flex;align-items:center;gap:6px;padding:4px 0;cursor:pointer;font-size:11px"><input type="checkbox" checked style="accent-color:var(--acc)"> ${s.name}</label>`).join('');
+  wizEl.innerHTML=`<div style="padding:28px 36px;max-width:560px;margin:0 auto">
+    <div style="font-size:20px;font-weight:600;color:var(--tx);margin-bottom:4px">Invite user</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:24px">Send an invitation to join ${w.label}.</p>
+    <div class="wf"><label>Full name</label><input id="inv-name" placeholder="e.g. Mari Tamm"></div>
+    <div class="wf"><label>Email</label><input id="inv-email" placeholder="e.g. mari@company.com" type="email"></div>
+    <div class="wf"><label>Role</label><select id="inv-role"><option value="viewer">Viewer — read-only</option><option value="owner">Owner — manage sites & assets</option><option value="admin">Admin — full access</option></select></div>
+    <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin:16px 0 8px">Site access</div>
+    <div id="inv-sites">${siteOpts}</div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="wizEl.classList.add('hidden')">Cancel</button>
+      <button class="btn acc" onclick="createUser()">Send invitation</button>
+    </div>
+  </div>`;
+};
+
+window.createUser=function(){
+  const name=document.getElementById('inv-name').value||'New User';
+  const email=document.getElementById('inv-email').value||'user@example.com';
+  const role=document.getElementById('inv-role').value;
+  const w=wd();
+  if(!w._users)w._users=[];
+  w._users.push({id:'u'+Date.now(),name,email,role,sites:role==='admin'?'all':w.sites.map(s=>s.id),assets:role==='admin'?'all':w.sites.flatMap(s=>s.assets.map(a=>a.id)),status:'invited',last:'Invited'});
+  wizEl.classList.add('hidden');nav('users');
+};
+
+R.settings=function(){
+  const w=wd(), country=ENTSOE[w.cc]||{name:w.cc||'',flag:''};
+  ct.innerHTML=`<div class="fp"><div class="fh"><h2>Workspace — ${w.label}</h2></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div>
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Legal entity</div>
+        <div class="wf"><label>Company name</label><input value="${w.label}"></div>
+        <div class="wf"><label>Company ID (Reg. code)</label><input value="${w.reg||''}"></div>
+        <div class="wf"><label>VAT number</label><input value="${w.vat||''}"></div>
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Contact details</div>
+        <div class="wf"><label>Contact person</label><input value="Sander Vahtras"></div>
+        <div class="wf"><label>Email</label><input value="sander@gridtanker.io"></div>
+        <div class="wf"><label>Phone</label><input value="+372 5123 4567"></div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--brd);margin-top:8px;padding-top:14px">
+      <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Market region</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="wf"><label>Country</label><input value="${country.flag} ${country.name}" disabled style="background:var(--cbg2)"></div>
+        <div class="wf"><label>Trading zone (ENTSO-E)</label><input value="${w.zone||''}" disabled style="background:var(--cbg2)"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn acc">Save changes</button></div>
+  </div>`;
+};
+
+// ══════════════════════════════════════════════
+// INTERACTIONS
+// ══════════════════════════════════════════════
+window.tS=function(j){const b=document.getElementById('sb-'+j),a=document.getElementById('sa-'+j);if(b){b.classList.toggle('hidden');a.textContent=b.classList.contains('hidden')?'+':'−';if(!b.classList.contains('hidden')){const s=wd().sites[j];setTimeout(()=>buildTimelineChart('siteChart'+j,s.assets,wd().cc||'EE'),120);}}};
+
+window.openSS=function(si){const s=wd().sites[si];avEl.innerHTML=`<div style="font-size:11px;color:var(--acc);cursor:pointer;margin-bottom:12px;font-weight:500" onclick="cA()">← Back to sites</div><div style="font-size:18px;font-weight:600;color:var(--tx);margin-bottom:4px">${s.name} — Settings</div><div style="display:flex;gap:16px;font-size:10px;color:var(--tx2);margin-bottom:18px"><span>${s.loc}</span>${s.eic?`<span>EIC: <strong style="color:var(--tx)">${s.eic}</strong></span>`:''}<span>Created: ${s.created||'—'}</span></div>${buildSiteSettings(s)}`;avEl.classList.remove('hidden');};
+
+window.oA=function(si,ai){
+  destroyCharts();
+  const s=wd().sites[si],a=s.assets[ai],pm=periodMult[gPeriod],pRev=Math.round(a.rev*pm);
+  const be=a.capex&&a.rev?{pct:Math.min(100,Math.round(a.rev/a.capex*100)),yl:Math.round(Math.max(0,(a.capex-a.rev)/(a.rev/3*12))*10)/10}:null;
+  const isBat=a.type==='battery';const bat=a.bat||null;
+
+  let h=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><div style="font-size:11px;color:var(--acc);cursor:pointer;font-weight:500" onclick="cA()">← Back</div>${timeSel('oA('+si+','+ai+')')}</div>`;
+  h+=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">${AI(a.type,isAc(a.status),'lg')}<div><div style="font-size:18px;font-weight:600;color:var(--tx)">${a.id}</div><div style="font-size:10px;color:var(--tx2)">${a.model} — ${s.name} ${s.eic?'('+s.eic+')':''} — ${s.trader?.name||''}</div></div></div>`;
+  h+=`<div style="display:flex;gap:16px;margin-bottom:16px;font-size:10px;color:var(--tx2)"><span>📍 Site created: <strong style="color:var(--tx)">${s.created||'—'}</strong></span><span>🔧 Asset installed: <strong style="color:var(--tx)">${a.installed||'—'}</strong></span><span>📊 Period: <strong style="color:var(--tx)">${periodLabels[gPeriod]}</strong></span></div>`;
+
+  // KPI row — different for batteries
+  if(isBat&&bat){
+    h+=`<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Capacity</div><div class="mv">${bat.capKwh} kWh</div><div style="font-size:9px;color:var(--tx2)">${a.kw} kW power</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">SOC</div><div class="mv" style="color:${bat.soc>20?'var(--acc)':'var(--alr)'}">${bat.soc}%</div></div>
+      <div class="mc"><div class="ml">Temperature</div><div class="mv" style="color:${bat.tempC>40?'var(--alr)':bat.tempC>35?'var(--warn)':'var(--tx)'}">${bat.tempC}°C</div></div>
+      <div class="mc"><div class="ml">Cycles</div><div class="mv">${bat.cycles.toLocaleString()}</div><div style="font-size:8px;color:var(--tx3);margin-top:1px">of ${bat.maxCycles.toLocaleString()}</div></div>
+    </div>`;
+  } else {
+    h+=`<div class="mets" style="grid-template-columns:repeat(4,minmax(0,1fr))"><div class="mc"><div class="ml">Capacity</div><div class="mv">${a.kw>=1000?(a.kw/1000).toFixed(1)+' MW':a.kw+' kW'}</div>${a.kwh?`<div style="font-size:9px;color:var(--tx2)">${a.kwh.toLocaleString()} kWh</div>`:''}</div><div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div><div class="mc"><div class="ml">Availability</div><div class="mv">${a.avail}%</div></div><div class="mc"><div class="ml">Threshold</div><div class="mv" style="font-size:14px">${a.type==='crypto'?'≤':'≥'} €${a.threshold}</div></div></div>`;
+  }
+
+  // Battery-specific panel
+  if(isBat&&bat){
+    // SOC gauge + battery health + power limits
+    const socPct=bat.soc;const cyclePct=Math.round(bat.cycles/bat.maxCycles*100);
+    const socBarCol=socPct>50?'var(--acc)':socPct>20?'var(--warn)':'var(--alr)';
+    const tempCol=bat.tempC>40?'var(--alr)':bat.tempC>35?'var(--warn)':'var(--acc)';
+
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
+
+    // Left: SOC & Power
+    h+=`<div class="fp"><div class="fh"><h2>State of charge</h2></div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+        <div style="position:relative;width:100px;height:100px">
+          <svg viewBox="0 0 100 100" width="100" height="100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(128,128,128,.12)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="${socBarCol}" stroke-width="8" stroke-linecap="round"
+              stroke-dasharray="${socPct*2.64} ${264-socPct*2.64}" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:22px;font-weight:700;color:var(--tx)">${socPct}%</div>
+            <div style="font-size:8px;color:var(--tx3)">SOC</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="gf-row"><span class="gfl">Current SOC</span><span class="gfv" style="color:${socBarCol}">${bat.soc}%</span></div>
+          <div class="gf-row"><span class="gfl">Minimum SOC</span><span class="gfv">${bat.socMin}%</span></div>
+          <div class="gf-row"><span class="gfl">Maximum SOC</span><span class="gfv">${bat.socMax}%</span></div>
+          <div class="gf-row"><span class="gfl">Usable range</span><span class="gfv">${bat.socMax-bat.socMin}%</span></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--brd);padding-top:12px">
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Power limits</div>
+        <div class="gf-row"><span class="gfl">Capacity</span><span class="gfv">${bat.capKwh} kWh</span></div>
+        <div class="gf-row"><span class="gfl">Max discharge</span><span class="gfv">${bat.maxDischarge} kW</span></div>
+        <div class="gf-row"><span class="gfl">Max charge</span><span class="gfv">${bat.maxCharge} kW</span></div>
+      </div>
+    </div>`;
+
+    // Right: Cycles & Temperature
+    h+=`<div class="fp"><div class="fh"><h2>Battery health</h2></div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--tx2)">Cycle count</span><span style="font-size:10px;font-weight:600;color:var(--tx)">${bat.cycles.toLocaleString()} / ${bat.maxCycles.toLocaleString()}</span></div>
+        <div style="background:var(--cbg2);border-radius:4px;height:8px;overflow:hidden"><div style="height:100%;width:${cyclePct}%;background:${cyclePct>80?'var(--alr)':cyclePct>60?'var(--warn)':'var(--acc)'};border-radius:4px"></div></div>
+        <div style="font-size:8px;color:var(--tx3);text-align:right;margin-top:2px">${cyclePct}% used — est. ${Math.round((bat.maxCycles-bat.cycles)/bat.cycles*3)} years remaining</div>
+      </div>
+      <div class="gf-row"><span class="gfl">Temperature</span><span class="gfv" style="color:${tempCol}">${bat.tempC}°C</span></div>
+      <div class="gf-row"><span class="gfl">Availability</span><span class="gfv">${a.avail}%</span></div>
+      <div class="gf-row"><span class="gfl">Threshold</span><span class="gfv">≥ €${a.threshold}/MWh</span></div>
+    </div>`;
+    h+=`</div>`;
+
+    // Full-width battery activity chart: SOC + discharge/charge power + DA price
+    h+=`<div class="fp"><div class="fh"><h2>Battery activity — 24h discharge/charge cycles & SOC</h2><span class="phl">Today</span></div>
+      <div style="position:relative;height:280px"><canvas id="batActivityChart"></canvas></div>
+    </div>`;
+  }
+
+  // Genset-specific panel
+  const isGen=a.type==='genset';const gen=a.gen||null;
+  if(isGen&&gen){
+    const fuelCol=gen.fuelPct>gen.fuelWarnPct?'var(--acc)':gen.fuelPct>10?'var(--warn)':'var(--alr)';
+    const fuelLow=gen.fuelPct<=gen.fuelWarnPct;
+    const tempCol=gen.tempC>90?'var(--alr)':gen.tempC>80?'var(--warn)':'var(--acc)';
+    const hrsToMaint=gen.maintIntervalHrs-(gen.workHrs-gen.lastMaintHrs);
+    const maintUrgent=hrsToMaint<50;
+    const battOk=gen.battV>=24;
+
+    // Override KPI row for gensets
+    h=h.replace(/<div class="mets" style="grid-template-columns:repeat\(4[\s\S]*?<\/div><\/div><\/div><\/div>/,
+      `<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Rated / Cont.</div><div class="mv">${a.kw} kW</div><div style="font-size:9px;color:var(--tx2)">${gen.maxContKw} kW cont.${a.kwh?' — '+a.kwh.toLocaleString()+' kWh':''}</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">Fuel level</div><div class="mv" style="color:${fuelCol}">${gen.fuelPct}%</div>${fuelLow?'<div style="font-size:8px;color:var(--alr);font-weight:600">⚠ LOW</div>':''}</div>
+      <div class="mc"><div class="ml">Engine temp</div><div class="mv" style="color:${tempCol}">${gen.tempC}°C</div></div>
+      <div class="mc"><div class="ml">Work hours</div><div class="mv">${gen.workHrs.toLocaleString()}</div><div style="font-size:8px;color:${maintUrgent?'var(--alr)':'var(--tx3)'}">${hrsToMaint}h to service</div></div>
+    </div>`);
+
+    // Full-width dispatch earnings chart
+    h+=`<div class="fp"><div class="fh"><h2>Dispatch sessions & earnings — 24h</h2><span class="phl">Today</span></div>
+      <div style="position:relative;height:280px"><canvas id="genDispatchChart"></canvas></div>
+    </div>`;
+
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">`;
+
+    // Left: Fuel
+    h+=`<div class="fp"><div class="fh"><h2>Fuel system</h2>${fuelLow?'<span class="pill p-flt">⚠ Low fuel warning</span>':''}</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+        <div style="position:relative;width:100px;height:100px">
+          <svg viewBox="0 0 100 100" width="100" height="100">
+            <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(128,128,128,.12)" stroke-width="8"/>
+            <circle cx="50" cy="50" r="42" fill="none" stroke="${fuelCol}" stroke-width="8" stroke-linecap="round"
+              stroke-dasharray="${gen.fuelPct*2.64} ${264-gen.fuelPct*2.64}" transform="rotate(-90 50 50)"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div style="font-size:22px;font-weight:700;color:var(--tx)">${gen.fuelPct}%</div>
+            <div style="font-size:8px;color:var(--tx3)">⛽ Fuel</div>
+          </div>
+        </div>
+        <div style="flex:1">
+          <div class="gf-row"><span class="gfl">Fuel level</span><span class="gfv" style="color:${fuelCol}">${gen.fuelPct}% (${gen.fuelLitres}L)</span></div>
+          <div class="gf-row"><span class="gfl">Tank capacity</span><span class="gfv">${gen.tankLitres}L</span></div>
+          <div class="gf-row"><span class="gfl">Low fuel warning</span><span class="gfv">${gen.fuelWarnPct}%</span></div>
+          <div class="gf-row"><span class="gfl">Last refuel</span><span class="gfv">${gen.lastRefuel}</span></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid var(--brd);padding-top:12px">
+        <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:8px">Power limits</div>
+        <div class="gf-row"><span class="gfl">Rated capacity</span><span class="gfv">${a.kw} kW</span></div>
+        <div class="gf-row"><span class="gfl">Max continuous load</span><span class="gfv">${gen.maxContKw} kW</span></div>
+        <div class="gf-row"><span class="gfl">Availability</span><span class="gfv">${a.avail}%</span></div>
+      </div>
+    </div>`;
+
+    // Right: Maintenance (no temperature chart)
+    h+=`<div class="fp"><div class="fh"><h2>Engine & maintenance</h2>${maintUrgent?'<span class="pill p-mnt">Service due</span>':''}</div>
+      <div style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:10px;color:var(--tx2)">Hours until next service</span><span style="font-size:10px;font-weight:600;color:${maintUrgent?'var(--alr)':'var(--tx)'}">${hrsToMaint}h</span></div>
+        <div style="background:var(--cbg2);border-radius:4px;height:8px;overflow:hidden"><div style="height:100%;width:${Math.max(0,Math.round((1-hrsToMaint/gen.maintIntervalHrs)*100))}%;background:${maintUrgent?'var(--alr)':'var(--acc)'};border-radius:4px"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--tx3);margin-top:2px"><span>Last: ${gen.lastMaintHrs}h</span><span>Interval: ${gen.maintIntervalHrs}h</span><span>Next: ${gen.lastMaintHrs+gen.maintIntervalHrs}h</span></div>
+      </div>
+      <div class="gf-row"><span class="gfl">Total work hours</span><span class="gfv">${gen.workHrs.toLocaleString()}h</span></div>
+      <div class="gf-row"><span class="gfl">Starter battery</span><span class="gfv" style="color:${battOk?'var(--acc)':'var(--alr)'}">${gen.battV}V ${battOk?'OK':'⚠ LOW'}</span></div>
+      <div class="gf-row"><span class="gfl">Engine temperature</span><span class="gfv" style="color:${tempCol}">${gen.tempC}°C</span></div>
+      <div class="gf-row"><span class="gfl">Threshold</span><span class="gfv">≥ €${a.threshold}/MWh</span></div>
+    </div>`;
+    h+=`</div>`;
+  }
+
+  // Crypto-specific panel
+  const isCry=a.type==='crypto';const cry=a.cry||null;
+  if(isCry&&cry){
+    h=h.replace(/<div class="mets" style="grid-template-columns:repeat\(4[\s\S]*?<\/div><\/div><\/div><\/div>/,
+      `<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Power</div><div class="mv">${a.kw} kW</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">BTC price</div><div class="mv" style="font-size:15px">$${cry.btcPrice.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">Hash rate</div><div class="mv">${cry.hashRate} TH/s</div></div>
+      <div class="mc"><div class="ml">BTC mined</div><div class="mv" style="font-size:15px">${cry.btcMined} ₿</div></div>
+    </div>`);
+    // Full-width mining profitability chart
+    h+=`<div class="fp"><div class="fh"><h2>Mining profitability — 24h electricity cost vs crypto revenue</h2><span class="phl">Today</span></div>
+      <div style="position:relative;height:280px"><canvas id="cryptoProfitChart"></canvas></div>
+    </div>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fp"><div class="fh"><h2>Mining performance</h2></div>
+        <div class="gf-row"><span class="gfl">Hash rate</span><span class="gfv">${cry.hashRate} TH/s</span></div>
+        <div class="gf-row"><span class="gfl">Power efficiency</span><span class="gfv">${cry.powerEff} W/TH</span></div>
+        <div class="gf-row"><span class="gfl">Power consumption</span><span class="gfv">${a.kw} kW</span></div>
+        <div class="gf-row"><span class="gfl">BTC mined (today)</span><span class="gfv">${cry.btcMined} ₿</span></div>
+        <div class="gf-row"><span class="gfl">BTC value mined</span><span class="gfv">$${Math.round(cry.btcMined*cry.btcPrice).toLocaleString()}</span></div>
+        <div class="gf-row"><span class="gfl">Activation threshold</span><span class="gfv">≤ €${a.threshold}/MWh</span></div>
+        <div class="gf-row"><span class="gfl">Availability</span><span class="gfv">${a.avail}%</span></div>
+      </div>
+      <div class="fp"><div class="fh"><h2>Bitcoin price — 24h</h2></div>
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px"><span style="font-size:20px;font-weight:700;color:var(--tx)">$${cry.btcPrice.toLocaleString()}</span><span style="font-size:10px;color:var(--tx2)">BTC/USD</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--tx3);margin-bottom:10px"><span>Low: $${Math.min(...cry.btcHist).toLocaleString()}</span><span>Avg: $${Math.round(cry.btcHist.reduce((a,b)=>a+b,0)/cry.btcHist.length).toLocaleString()}</span><span>High: $${Math.max(...cry.btcHist).toLocaleString()}</span></div>
+        <div style="padding:10px;background:var(--cbg2);border-radius:var(--rs);font-size:10px;color:var(--tx2);line-height:1.6">Mines only when day-ahead price drops below <strong>€${a.threshold}/MWh</strong>. During negative price hours, electricity cost becomes revenue — you get paid to consume power while earning BTC.</div>
+      </div>
+    </div>`;
+  }
+
+  // Hydro-specific panel
+  const isHyd=a.type==='hydro';const hyd=a.hyd||null;
+  if(isHyd&&hyd){
+    const resCol=hyd.reservoirPct>50?'#2471a3':hyd.reservoirPct>25?'var(--warn)':'var(--alr)';
+    h=h.replace(/<div class="mets" style="grid-template-columns:repeat\(4[\s\S]*?<\/div><\/div><\/div><\/div>/,
+      `<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Capacity</div><div class="mv">${a.kw} kW</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">Reservoir</div><div class="mv" style="color:${resCol}">${hyd.reservoirPct}%</div></div>
+      <div class="mc"><div class="ml">Flow rate</div><div class="mv">${hyd.flowRate} m³/s</div></div>
+      <div class="mc"><div class="ml">Efficiency</div><div class="mv">${hyd.turbineEff}%</div></div>
+    </div>`);
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fp"><div class="fh"><h2>Reservoir level — 24h</h2><div style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:50%;background:${resCol}"></span><span style="font-size:14px;font-weight:600">${hyd.reservoirPct}%</span></div></div>
+        <div style="position:relative;height:140px"><canvas id="hydReservoir"></canvas></div>
+      </div>
+      <div class="fp"><div class="fh"><h2>Hydro parameters</h2></div>
+        <div class="gf-row"><span class="gfl">Reservoir level</span><span class="gfv" style="color:${resCol}">${hyd.reservoirPct}%</span></div>
+        <div class="gf-row"><span class="gfl">Flow rate</span><span class="gfv">${hyd.flowRate} m³/s</span></div>
+        <div class="gf-row"><span class="gfl">Head height</span><span class="gfv">${hyd.headM} m</span></div>
+        <div class="gf-row"><span class="gfl">Turbine efficiency</span><span class="gfv">${hyd.turbineEff}%</span></div>
+        <div class="gf-row"><span class="gfl">Current output</span><span class="gfv" style="color:var(--acc)">${a.sessions[0]?.kwAvg||0} kW</span></div>
+        <div class="gf-row"><span class="gfl">Availability</span><span class="gfv">${a.avail}%</span></div>
+      </div>
+    </div>`;
+  }
+
+  // Wind-specific panel
+  const isWnd=a.type==='wind';const wnd=a.wnd||null;
+  if(isWnd&&wnd){
+    const spdCol=wnd.currentSpeed>=wnd.ratedSpeed?'var(--acc)':wnd.currentSpeed>=wnd.cutIn?'var(--warn)':'var(--alr)';
+    h=h.replace(/<div class="mets" style="grid-template-columns:repeat\(4[\s\S]*?<\/div><\/div><\/div><\/div>/,
+      `<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Capacity</div><div class="mv">${a.kw} kW</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">Wind speed</div><div class="mv" style="color:${spdCol}">${wnd.currentSpeed} m/s</div></div>
+      <div class="mc"><div class="ml">Rated speed</div><div class="mv">${wnd.ratedSpeed} m/s</div></div>
+      <div class="mc"><div class="ml">Availability</div><div class="mv">${a.avail}%</div></div>
+    </div>`);
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fp"><div class="fh"><h2>Wind speed forecast — 24h</h2><span style="font-size:12px;font-weight:600;color:${spdCol}">${wnd.currentSpeed} m/s now</span></div>
+        <div style="position:relative;height:160px"><canvas id="windForecast"></canvas></div>
+      </div>
+      <div class="fp"><div class="fh"><h2>Turbine parameters</h2></div>
+        <div class="gf-row"><span class="gfl">Current wind</span><span class="gfv" style="color:${spdCol}">${wnd.currentSpeed} m/s</span></div>
+        <div class="gf-row"><span class="gfl">Cut-in speed</span><span class="gfv">${wnd.cutIn} m/s</span></div>
+        <div class="gf-row"><span class="gfl">Rated speed</span><span class="gfv">${wnd.ratedSpeed} m/s</span></div>
+        <div class="gf-row"><span class="gfl">Cut-out speed</span><span class="gfv">${wnd.cutOut} m/s</span></div>
+        <div class="gf-row"><span class="gfl">Current output</span><span class="gfv" style="color:var(--acc)">${a.sessions[0]?.kwAvg||0} kW</span></div>
+        <div style="margin-top:10px;padding:8px;background:var(--cbg2);border-radius:var(--rs);font-size:9px;color:var(--tx2)">Forecast: avg ${(wnd.forecast.reduce((a,b)=>a+b,0)/24).toFixed(1)} m/s — peak ${Math.max(...wnd.forecast).toFixed(1)} m/s in next 24h</div>
+      </div>
+    </div>`;
+  }
+
+  // Solar-specific panel
+  const isSol=a.type==='solar';const sol=a.sol||null;
+  if(isSol&&sol){
+    h=h.replace(/<div class="mets" style="grid-template-columns:repeat\(4[\s\S]*?<\/div><\/div><\/div><\/div>/,
+      `<div class="mets" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+      <div class="mc"><div class="ml">Capacity</div><div class="mv">${(sol.panelWp/1000).toFixed(0)} kWp</div></div>
+      <div class="mc"><div class="ml">Revenue (${periodLabels[gPeriod]})</div><div class="mv" style="color:var(--accd)">€${pRev.toLocaleString()}</div></div>
+      <div class="mc"><div class="ml">Irradiance</div><div class="mv">${sol.currentIrradiance} W/m²</div></div>
+      <div class="mc"><div class="ml">Sun hours</div><div class="mv">${sol.sunHrs}h</div></div>
+      <div class="mc"><div class="ml">Efficiency</div><div class="mv">${sol.efficiency}%</div></div>
+    </div>`);
+    // Full-width solar energy allocation chart
+    h+=`<div class="fp"><div class="fh"><h2>Solar production & energy allocation — 24h</h2><span class="phl">Today</span></div>
+      <div style="position:relative;height:280px"><canvas id="solarAllocChart"></canvas></div>
+      <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:8px;color:var(--tx3)"><span>Sunrise ~06:30</span><span>Peak ${Math.max(...sol.forecast)} W/m²</span><span>Sunset ~18:30</span></div>
+    </div>`;
+    h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="fp"><div class="fh"><h2>Solar parameters</h2></div>
+        <div class="gf-row"><span class="gfl">Panel capacity</span><span class="gfv">${(sol.panelWp/1000).toFixed(0)} kWp</span></div>
+        <div class="gf-row"><span class="gfl">Panel efficiency</span><span class="gfv">${sol.efficiency}%</span></div>
+        <div class="gf-row"><span class="gfl">Current irradiance</span><span class="gfv">${sol.currentIrradiance} W/m²</span></div>
+        <div class="gf-row"><span class="gfl">Expected sun hours</span><span class="gfv">${sol.sunHrs}h today</span></div>
+        <div class="gf-row"><span class="gfl">Tilt angle</span><span class="gfv">${sol.tiltAngle}°</span></div>
+        <div class="gf-row"><span class="gfl">Building load</span><span class="gfv">${s.buildingLoad||0} kW</span></div>
+      </div>
+      <div class="fp"><div class="fh"><h2>Negative price protection</h2></div>
+        <div style="padding:10px;background:var(--cbg2);border-radius:var(--rs);font-size:10px;color:var(--tx2);line-height:1.6;margin-bottom:8px">When day-ahead price is negative and there is no internal consumption or battery charging capacity available, solar inverter is <strong>curtailed</strong> to prevent selling at a loss.</div>
+        <div class="gf-row"><span class="gfl">Protection</span><span class="gfv" style="color:var(--acc)">Active</span></div>
+        <div class="gf-row"><span class="gfl">Curtailed hours today</span><span class="gfv">${sol._curtailedHrs||0}h</span></div>
+        <div class="gf-row"><span class="gfl">Loss prevented</span><span class="gfv" style="color:var(--acc)">€${sol._lossPrevented||0}</span></div>
+      </div>
+    </div>`;
+  }
+
+  // Sessions table — with earnings/cost and future planned sessions
+  // Generate simulated market prices for earnings calculation
+  const _simNowH=14; // 14:00
+  const _cc=wd().cc||'EE';const _base={EE:85,DE:92}[_cc]||80;
+  function _sesPrice(mkt,h){const pk=(h>=7&&h<=10)||(h>=17&&h<=20);const da=_base+(pk?120+Math.random()*80:Math.random()*50);if(mkt==='mFRR')return Math.round(da*(pk?2.2:1.3));if(mkt==='aFRR')return Math.round(da*(pk?1.8:1.1));if(mkt==='FCR')return Math.round(da*1.3+120);return Math.round(da);}
+
+  // Build future planned sessions based on asset type
+  const futureSes=[];
+  if(a.type==='genset'){
+    futureSes.push({on:'17:30',off:'18:15',kwAvg:a.gen?.maxContKw||a.kw,mkt:'mFRR',planned:true});
+    futureSes.push({on:'19:00',off:'19:30',kwAvg:a.gen?.maxContKw||a.kw,mkt:'mFRR',planned:true});
+  } else if(a.type==='battery'){
+    futureSes.push({on:'14:30',off:'15:00',kwAvg:-350,mkt:'Charge',socStart:55,socEnd:78,planned:true});
+    futureSes.push({on:'16:00',off:'16:40',kwAvg:420,mkt:'aFRR',socStart:78,socEnd:45,planned:true});
+    futureSes.push({on:'19:00',off:'19:30',kwAvg:490,mkt:'mFRR',socStart:68,socEnd:30,planned:true});
+    futureSes.push({on:'20:00',off:'22:00',kwAvg:-400,mkt:'Charge',socStart:30,socEnd:88,planned:true});
+  } else if(a.type==='solar'){
+    futureSes.push({on:'14:00',off:'17:00',kwAvg:28,mkt:'Day-ahead',planned:true});
+  } else if(a.type==='wind'){
+    futureSes.push({on:'14:00',off:'23:59',kwAvg:180,mkt:'Day-ahead',planned:true});
+  } else if(a.type==='hydro'){
+    futureSes.push({on:'14:00',off:'23:59',kwAvg:165,mkt:'Day-ahead',planned:true});
+  } else if(a.type==='crypto'){
+    futureSes.push({on:'20:00',off:'22:00',kwAvg:14,mkt:'Day-ahead',planned:true});
+  }
+
+  // Split existing sessions into past / future based on start time
+  const pastSes=a.sessions.filter(ses=>{const h=parseInt(ses.on.split(':')[0]);return h<_simNowH;}).map(s=>({...s,planned:false}));
+  const existingFuture=a.sessions.filter(ses=>{const h=parseInt(ses.on.split(':')[0]);return h>=_simNowH;}).map(s=>({...s,planned:true}));
+  // Merge: use existing future sessions first, then add generated ones that don't overlap
+  const allFuture=[...existingFuture];
+  futureSes.forEach(fs=>{if(!allFuture.some(ef=>ef.on===fs.on))allFuture.push(fs);});
+  const allSes=[...pastSes,...allFuture];
+
+  const hasSoc=allSes.some(s=>s.socStart!==undefined);
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="fp"><div class="fh"><h2>Sessions</h2><span style="font-size:9px;color:var(--tx3)">${pastSes.length} past, ${allFuture.length} planned</span></div>`;
+  if(allSes.length){
+    h+=`<table class="dt"><thead><tr><th>ON</th><th>OFF</th><th>kW</th>${hasSoc?'<th>SOC</th>':''}<th>Market</th><th style="text-align:right">€</th></tr></thead><tbody>`;
+    allSes.forEach(ses=>{
+      const isCharge=ses.mkt==='Charge'||ses.kwAvg<0;
+      const isPast=!ses.planned;
+      const dotCol=isCharge?'#3a7bd5':'var(--acc)';
+      const kwAbs=Math.abs(ses.kwAvg);
+      const kwDisplay=isCharge?`<span style="color:#3a7bd5">⬇ ${kwAbs}</span>`:`<span style="color:var(--acc)">⬆ ${ses.kwAvg}</span>`;
+      // Calculate earnings/cost
+      const startH=parseInt(ses.on.split(':')[0]);
+      const endH=parseInt(ses.off.split(':')[0])||(ses.off==='23:59'?24:startH+1);
+      const durH=Math.max((endH-startH)+(parseInt(ses.off.split(':')[1]||0)-parseInt(ses.on.split(':')[1]||0))/60,0.25);
+      const price=_sesPrice(ses.mkt,startH);
+      const earning=isCharge?-Math.round(Math.abs(price*0.4)*kwAbs/1000*durH*100)/100:Math.round(price*kwAbs/1000*durH*100)/100;
+      const earnCol=earning>=0?'var(--accd)':'var(--alr)';
+      const rowOpacity=isPast?'1':'0.55';
+      const rowStyle=isPast?'':`background:repeating-linear-gradient(135deg,transparent,transparent 4px,rgba(29,158,117,.04) 4px,rgba(29,158,117,.04) 8px);`;
+      h+=`<tr style="opacity:${rowOpacity};${rowStyle}"><td><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${dotCol};margin-right:4px"></span>${ses.on}${!isPast?' <span style="font-size:7px;color:var(--acc);font-weight:600">▸</span>':''}</td><td><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--alr);margin-right:4px"></span>${ses.off}</td><td>${kwDisplay}</td>${hasSoc&&ses.socStart!==undefined?`<td style="font-size:9px">${ses.socStart}%→${ses.socEnd}%</td>`:(hasSoc?'<td></td>':'')}<td>${ses.mkt?`<span class="pill ${isCharge?'':'p-dk'}" style="font-size:8px;padding:2px 6px;${isCharge?'background:rgba(58,123,213,.1);color:#3a7bd5':''}">${ses.mkt}</span>`:''}</td><td style="text-align:right;font-weight:600;color:${earnCol};font-size:10px">${earning>=0?'+':''}€${earning.toFixed(2)}</td></tr>`;
+    });
+    // Totals row
+    let totalEarn=0;
+    allSes.forEach(ses=>{const isCharge=ses.mkt==='Charge'||ses.kwAvg<0;const kwAbs=Math.abs(ses.kwAvg);const startH=parseInt(ses.on.split(':')[0]);const endH=parseInt(ses.off.split(':')[0])||(ses.off==='23:59'?24:startH+1);const durH=Math.max((endH-startH)+(parseInt(ses.off.split(':')[1]||0)-parseInt(ses.on.split(':')[1]||0))/60,0.25);const price=_sesPrice(ses.mkt,startH);totalEarn+=isCharge?-Math.round(Math.abs(price*0.4)*kwAbs/1000*durH*100)/100:Math.round(price*kwAbs/1000*durH*100)/100;});
+    h+=`<tr style="border-top:2px solid var(--brd)"><td colspan="${hasSoc?4:3}" style="font-weight:600;color:var(--tx)">Total (${allSes.length} sessions)</td><td></td><td style="text-align:right;font-weight:700;color:${totalEarn>=0?'var(--accd)':'var(--alr)'}">€${totalEarn.toFixed(2)}</td></tr>`;
+    h+=`</tbody></table>`;
+    h+=`<div style="display:flex;gap:12px;margin-top:8px;font-size:8px;color:var(--tx3)"><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:var(--cbg)"></span> Past (actual)</span><span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:2px;background:repeating-linear-gradient(135deg,transparent,transparent 2px,rgba(29,158,117,.15) 2px,rgba(29,158,117,.15) 4px)"></span> Planned (future)</span></div>`;
+  } else h+=`<div style="padding:20px;text-align:center;color:var(--tx3)">No sessions</div>`;
+
+  // Configuration + breakeven
+  h+=`</div><div class="fp"><div class="fh"><h2>Configuration</h2></div><div class="gf-row"><span class="gfl">Type</span><span class="gfv">${a.type}</span></div><div class="gf-row"><span class="gfl">Model</span><span class="gfv">${a.model}</span></div><div class="gf-row"><span class="gfl">Site created</span><span class="gfv">${s.created||'—'}</span></div><div class="gf-row"><span class="gfl">Installed</span><span class="gfv">${a.installed||'—'}</span></div><div style="margin-top:8px;border-top:1px solid var(--brd);padding-top:8px"><div class="wf"><label>Threshold €/MWh</label><input type="number" value="${a.threshold}"></div><div class="wf"><label>CAPEX €</label><input type="number" value="${a.capex||''}"></div>${isBat&&bat?`<div class="wf"><label>Min SOC %</label><input type="number" value="${bat.socMin}"></div><div class="wf"><label>Max SOC %</label><input type="number" value="${bat.socMax}"></div>`:''}</div>`;
+  if(be){h+=`<div class="be-box"><div style="font-size:9px;font-weight:600;color:var(--accd);text-transform:uppercase;margin-bottom:5px">Breakeven</div><div class="gf-row"><span class="gfl" style="color:var(--accd)">CAPEX</span><span class="gfv">€${a.capex.toLocaleString()}</span></div><div class="gf-row"><span class="gfl" style="color:var(--accd)">Earned</span><span class="gfv">€${a.rev.toLocaleString()}</span></div><div class="gf-row"><span class="gfl" style="color:var(--accd)">Payback</span><span class="gfv">${be.yl} years</span></div><div style="margin-top:6px;background:var(--cbg);border-radius:4px;height:6px"><div style="height:100%;width:${be.pct}%;background:${GL};border-radius:4px"></div></div><div style="font-size:8px;color:var(--accd);text-align:right;margin-top:2px;font-weight:600">${be.pct}%</div></div>`;}
+  h+=`</div></div>`;
+  avEl.innerHTML=h;avEl.classList.remove('hidden');
+
+
+  // ── NOW hour & helpers for all asset charts ──
+  const NOW=14*4; // 14:00 = index 56 in 15-min intervals
+  const H24=Array.from({length:96},(_,i)=>{const h=Math.floor(i/4),m=(i%4)*15;return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');});
+  const hIdx=(h)=>h*4; // convert hour to 15-min index
+
+  // Chart.js plugin: vertical NOW line
+  const nowPlugin={id:'nowLine',afterDraw(chart){
+    const ni=chart.options.plugins.nowLine;if(!ni||!ni.index)return;
+    const xScale=chart.scales.x;if(!xScale)return;
+    const x=xScale.getPixelForValue(ni.index);
+    const yA=chart.chartArea;if(!yA||!x)return;
+    const c=chart.ctx;
+    c.save();
+    c.beginPath();c.moveTo(x,yA.top);c.lineTo(x,yA.bottom);
+    c.lineWidth=2;c.strokeStyle='rgba(26,26,26,.65)';c.setLineDash([]);c.stroke();
+    c.fillStyle='#1a1a1a';c.font='bold 8px sans-serif';c.textAlign='center';
+    c.fillText('NOW',x,yA.top-5);
+    c.beginPath();c.arc(x,yA.top-1,3,0,Math.PI*2);c.fill();
+    c.restore();
+  }};
+
+  // Standard chart options with NOW line plugin
+  function cOpts(yLbl,yMin,yMax,step){return{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{nowLine:{index:NOW},legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:7,weight:'500'},padding:6,usePointStyle:true,pointStyle:'rect'}}},scales:{y:{min:yMin,max:yMax,title:{display:true,text:yLbl,font:{size:7,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:7},color:'#a0a0a0',stepSize:step},grid:{color:'rgba(0,0,0,.04)'}},x:{grid:{display:false},ticks:{font:{size:7},color:'#a0a0a0',maxTicksLimit:8,maxRotation:0}}}};}
+
+  // Split array into actual (solid ≤NOW) and prediction (dashed ≥NOW), overlapping at NOW
+  function splitAP(data){return{act:data.map((v,i)=>i<=NOW?v:null),pred:data.map((v,i)=>i>=NOW?v:null)};}
+
+  // Build planned activation from sessions at 15-min resolution (96 slots)
+  function buildPlan(sessions,fillVal){
+    const p=new Array(96).fill(null);
+    (sessions||[]).forEach(ses=>{
+      const [oh,om]=ses.on.split(':').map(Number);
+      const [fhR,fmR]=ses.off.split(':').map(Number);
+      const onI=oh*4+Math.floor(om/15);
+      let offI=fhR*4+Math.floor(fmR/15);
+      if(ses.off==='23:59'||ses.off==='24:00')offI=95;
+      for(let i=onI;i<=Math.min(offI,95);i++) p[i]=fillVal;
+    });
+    return p;
+  }
+
+  // Interpolate 24-point hourly data to 96-point 15-min data
+  function to96(arr24){
+    const out=[];
+    for(let i=0;i<24;i++){const v=arr24[i];for(let q=0;q<4;q++){
+      if(i<23&&arr24[i+1]!==null&&v!==null){out.push(Math.round((v+(arr24[i+1]-v)*q/4)*100)/100);}
+      else out.push(v);
+    }}
+    return out;
+  }
+
+
+  setTimeout(()=>{
+    const N=96; // 15-min intervals
+    const cc=wd().cc||'EE';const base={EE:85,DE:92}[cc]||80;
+    // Generate 96-point market prices
+    function genDA(){return Array.from({length:N},(_,i)=>{const h=i/4;const pk=(h>=6&&h<=9)||(h>=17&&h<=20);const nt=h<5;return Math.round((base+(pk?Math.random()*180+60:nt?Math.random()*20-30:Math.random()*70))*10)/10;});}
+    // mFRR: higher than DA, spiky during peak
+    function genMFRR(da){return da.map((d,i)=>{const h=i/4;const pk=(h>=7&&h<=10)||(h>=17&&h<=20);return Math.round((d*(pk?1.8+Math.random()*1.2:1.1+Math.random()*0.4))*10)/10;});}
+    // aFRR: similar to mFRR but slightly lower, more volatile
+    function genAFRR(da){return da.map((d,i)=>{const h=i/4;const pk=(h>=7&&h<=10)||(h>=17&&h<=20);return Math.round((d*(pk?1.5+Math.random()*1.0:0.9+Math.random()*0.5))*10)/10;});}
+    // FCR: premium pricing, less volatile
+    function genFCR(da){return da.map((d,i)=>{const h=i/4;return Math.round((Math.abs(d)*1.2+120+Math.random()*80)*10)/10;});}
+    // Get unique markets from sessions (excluding Charge)
+    function getAssetMkts(sessions){return[...new Set((sessions||[]).map(s=>s.mkt).filter(m=>m&&m!=='Charge'))];}
+    const mktLineColors={'Day-ahead':'rgba(58,123,213,.5)','mFRR':'rgba(192,57,43,.6)','aFRR':'rgba(230,126,34,.6)','FCR':'rgba(142,68,173,.6)','FCR-D':'rgba(108,52,131,.6)','Intraday':'rgba(41,128,185,.5)'};
+
+    // Map sessions to 96-slot arrays
+    function sesTo96(sessions,valFn){
+      const arr=new Array(N).fill(null);
+      (sessions||[]).forEach(ses=>{
+        const [oh,om]=ses.on.split(':').map(Number);const [fh,fm]=ses.off.split(':').map(Number);
+        let onI=oh*4+Math.floor(om/15),offI=fh*4+Math.floor(fm/15);
+        if(ses.off==='23:59'||ses.off==='24:00')offI=95;
+        for(let i=onI;i<=Math.min(offI,95);i++) arr[i]=valFn(ses,i,onI,offI);
+      });
+      return arr;
+    }
+
+    // ── Battery: discharge/charge, SOC + market price lines ──
+    if(isBat&&bat){
+      const el=document.getElementById('batActivityChart');if(el){
+        const daPrice=genDA();daPrice[8]=-12;daPrice[9]=-8;
+        const mfrr=genMFRR(daPrice),afrr=genAFRR(daPrice);
+        const mkts=getAssetMkts(a.sessions);
+        const discharge=sesTo96(a.sessions.filter(s=>s.mkt!=='Charge'&&s.kwAvg>0),(s)=>s.kwAvg);
+        const charge=sesTo96(a.sessions.filter(s=>s.mkt==='Charge'||s.kwAvg<0),(s)=>Math.abs(s.kwAvg));
+        const socLine=new Array(N).fill(null);
+        (a.sessions||[]).forEach(ses=>{
+          if(ses.socStart===undefined)return;
+          const [oh,om]=ses.on.split(':').map(Number);const [fh,fm]=ses.off.split(':').map(Number);
+          let onI=oh*4+Math.floor(om/15),offI=fh*4+Math.floor(fm/15);
+          if(ses.off==='23:59')offI=95;const dur=Math.max(offI-onI,1);
+          for(let i=onI;i<=Math.min(offI,95);i++){socLine[i]=Math.round(ses.socStart+(ses.socEnd-ses.socStart)*(i-onI)/dur);}
+        });
+        let ls=null;for(let i=0;i<N;i++){if(socLine[i]!==null)ls=socLine[i];else if(ls!==null)socLine[i]=ls;}
+        let fs2=socLine.find(v=>v!==null);for(let i=0;i<N;i++){if(socLine[i]!==null)break;socLine[i]=fs2;}
+        const disA=discharge.map((v,i)=>i<=NOW?v:null),disP=discharge.map((v,i)=>i>NOW?v:null);
+        const chgA=charge.map((v,i)=>i<=NOW?v:null),chgP=charge.map((v,i)=>i>NOW?v:null);
+        const socA=socLine.map((v,i)=>i<=NOW?v:null),socP=socLine.map((v,i)=>i>=NOW?v:null);
+        const ds=[
+          {type:'bar',data:disA,backgroundColor:'rgba(29,158,117,.6)',borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Discharge (actual)'},
+          {type:'bar',data:disP,backgroundColor:'rgba(29,158,117,.25)',borderColor:'rgba(29,158,117,.5)',borderWidth:1,borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Discharge (planned)'},
+          {type:'bar',data:chgA.map(v=>v?-v:null),backgroundColor:'rgba(58,123,213,.5)',borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Charge (actual)'},
+          {type:'bar',data:chgP.map(v=>v?-v:null),backgroundColor:'rgba(58,123,213,.2)',borderColor:'rgba(58,123,213,.4)',borderWidth:1,borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Charge (planned)'},
+          {type:'line',data:socA,borderColor:'#1a1a1a',fill:false,borderWidth:2.5,pointRadius:0,tension:.3,yAxisID:'y1',order:1,label:'SOC actual'},
+          {type:'line',data:socP,borderColor:'#1a1a1a',borderWidth:2,borderDash:[5,4],pointRadius:0,tension:.3,yAxisID:'y1',order:1,fill:false,label:'SOC planned'}];
+        // Add price lines for each market the battery operates on
+        if(mkts.includes('Day-ahead'))ds.push({type:'line',data:daPrice,borderColor:mktLineColors['Day-ahead'],borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y2',order:2,fill:false,label:'Day-ahead (€/MWh)'});
+        if(mkts.includes('mFRR'))ds.push({type:'line',data:mfrr,borderColor:mktLineColors['mFRR'],borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y2',order:2,fill:false,label:'mFRR (€/MWh)'});
+        if(mkts.includes('aFRR'))ds.push({type:'line',data:afrr,borderColor:mktLineColors['aFRR'],borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y2',order:2,fill:false,label:'aFRR (€/MWh)'});
+        _charts.batAct=new Chart(el,{type:'bar',plugins:[nowPlugin],data:{labels:H24,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{nowLine:{index:NOW},legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:7,weight:'500'},padding:5,usePointStyle:true,pointStyle:'rect'}},
+            tooltip:{callbacks:{label:function(c){const v=c.parsed.y;if(v===null||v===0)return null;if(c.dataset.label.includes('Discharge'))return'Discharge: '+v+'kW';if(c.dataset.label.includes('Charge'))return'Charge: '+Math.abs(v)+'kW';if(c.dataset.label.includes('SOC'))return'SOC: '+v+'%';if(c.dataset.label.includes('€/MWh'))return c.dataset.label.split('(')[0].trim()+': €'+v+'/MWh';return null;}}}},
+          scales:{y:{position:'left',title:{display:true,text:'kW',font:{size:7,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:7},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},
+            y1:{position:'right',min:0,max:100,title:{display:true,text:'SOC %',font:{size:7,weight:'600'},color:'#1a1a1a'},ticks:{font:{size:7},color:'#1a1a1a',callback:v=>v+'%'},grid:{drawOnChartArea:false}},
+            y2:{display:false},x:{grid:{display:false},ticks:{font:{size:7},color:'#a0a0a0',maxTicksLimit:16,maxRotation:0}}}}});
+      }
+    }
+
+    // ── Genset: dispatch sessions, earnings + market price lines ──
+    if(isGen&&gen){
+      const el=document.getElementById('genDispatchChart');if(el){
+        const daPrice=genDA();
+        const mfrr=genMFRR(daPrice),afrr=genAFRR(daPrice),fcr=genFCR(daPrice);
+        const mkts=getAssetMkts(a.sessions);
+        const dispPower=sesTo96(a.sessions,(s)=>s.kwAvg||gen.maxContKw);
+        const mktArr=new Array(N).fill('');
+        (a.sessions||[]).forEach(ses=>{const [oh,om]=ses.on.split(':').map(Number);const [fh,fm]=ses.off.split(':').map(Number);let onI=oh*4+Math.floor(om/15),offI=fh*4+Math.floor(fm/15);if(ses.off==='23:59')offI=95;for(let i=onI;i<=Math.min(offI,95);i++)mktArr[i]=ses.mkt||'mFRR';});
+        for(let i=NOW+1;i<N;i++){if(!dispPower[i]&&mfrr[i]>=a.threshold&&((i/4>=17&&i/4<=20)||mfrr[i]>a.threshold*1.2)){dispPower[i]=gen.maxContKw;mktArr[i]='mFRR';}}
+        const disA=dispPower.map((v,i)=>i<=NOW?v:null),disP=dispPower.map((v,i)=>i>NOW?v:null);
+        // Earnings based on the market price the session is on
+        const earn=dispPower.map((v,i)=>{if(!v)return null;const m=mktArr[i];const p=m==='mFRR'?mfrr[i]:m==='aFRR'?afrr[i]:m==='FCR'?fcr[i]:daPrice[i];return Math.round(p*v/1000/4*100)/100;});
+        const eA=earn.map((v,i)=>i<=NOW?v:null),eP=earn.map((v,i)=>i>NOW?v:null);
+        const ds=[
+          {type:'bar',data:disA,backgroundColor:'rgba(15,110,86,.6)',borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Dispatch (actual)'},
+          {type:'bar',data:disP,backgroundColor:'rgba(15,110,86,.2)',borderColor:'rgba(15,110,86,.5)',borderWidth:1,borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Dispatch (predicted)'},
+          {type:'bar',data:eA,backgroundColor:'rgba(230,126,34,.55)',borderRadius:2,barPercentage:.5,categoryPercentage:1,yAxisID:'y2',order:3,label:'Earnings (actual €)'},
+          {type:'bar',data:eP,backgroundColor:'rgba(230,126,34,.2)',borderColor:'rgba(230,126,34,.5)',borderWidth:1,borderRadius:2,barPercentage:.5,categoryPercentage:1,yAxisID:'y2',order:3,label:'Earnings (predicted €)'}];
+        // Add price lines for each market the genset operates on
+        if(mkts.includes('mFRR'))ds.push({type:'line',data:mfrr,borderColor:mktLineColors['mFRR'],borderWidth:2,pointRadius:0,stepped:'before',yAxisID:'y1',order:1,fill:false,label:'mFRR price (€/MWh)'});
+        if(mkts.includes('aFRR'))ds.push({type:'line',data:afrr,borderColor:mktLineColors['aFRR'],borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y1',order:1,fill:false,label:'aFRR price (€/MWh)'});
+        if(mkts.includes('FCR'))ds.push({type:'line',data:fcr,borderColor:mktLineColors['FCR'],borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y1',order:1,fill:false,label:'FCR price (€/MWh)'});
+        ds.push({type:'line',data:daPrice,borderColor:mktLineColors['Day-ahead'],borderWidth:1,borderDash:[3,3],pointRadius:0,stepped:'before',yAxisID:'y1',order:2,fill:false,label:'Day-ahead (€/MWh)'});
+        ds.push({type:'line',data:H24.map(()=>a.threshold),borderColor:'rgba(201,60,60,.35)',borderWidth:1.5,borderDash:[6,4],pointRadius:0,yAxisID:'y1',order:1,fill:false,label:'Threshold (€'+a.threshold+')'});
+        _charts.genDisp=new Chart(el,{type:'bar',plugins:[nowPlugin],data:{labels:H24,datasets:ds},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{nowPlugin:{index:NOW},legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:7,weight:'500'},padding:4,usePointStyle:true,pointStyle:'rect'}},
+            tooltip:{callbacks:{label:function(c){const v=c.parsed.y;if(v===null||v===0)return null;const idx=c.dataIndex;if(c.dataset.label.includes('Dispatch'))return(c.dataset.label.includes('actual')?'Dispatched':'Predicted')+': '+v+'kW'+(mktArr[idx]?' — '+mktArr[idx]:'');if(c.dataset.label.includes('Earnings'))return(c.dataset.label.includes('actual')?'Earned':'Est.')+': €'+v.toFixed(2)+'/15min';if(c.dataset.label.includes('€/MWh'))return c.dataset.label.split('(')[0].trim()+': €'+v+'/MWh';if(c.dataset.label.includes('Threshold'))return'Threshold: €'+v;return null;}}}},
+          scales:{y:{position:'left',title:{display:true,text:'kW',font:{size:7,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:7},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},
+            y1:{position:'right',title:{display:true,text:'€/MWh',font:{size:7,weight:'600'},color:'#3a7bd5'},ticks:{font:{size:7},color:'#3a7bd5',callback:v=>'€'+v},grid:{drawOnChartArea:false}},
+            y2:{display:false},x:{grid:{display:false},ticks:{font:{size:7},color:'#a0a0a0',maxTicksLimit:16,maxRotation:0}}}}});
+      }
+    }
+
+    // ── Crypto: mining profitability at 15-min ──
+    if(isCry&&cry&&cry.btcHist){
+      const el=document.getElementById('cryptoProfitChart');if(el){
+        const daPrice=genDA();daPrice[8]=-18;daPrice[9]=-25;daPrice[10]=-25;daPrice[11]=-25;daPrice[16]=-12;daPrice[17]=-8;daPrice[18]=-3;daPrice[53]=-8;daPrice[54]=-5;daPrice[55]=-6;
+        const btcP96=to96(cry.btcHist);
+        const mining=daPrice.map(p=>p<=a.threshold);
+        const mineA=mining.map((m,i)=>m&&i<=NOW?a.kw:null);
+        const mineP=mining.map((m,i)=>m&&i>NOW?a.kw:null);
+        const btcPerQ=cry.btcMined/Math.max(mining.filter(Boolean).length,1);
+        const eCost=daPrice.map((p,i)=>mining[i]?Math.round(p*a.kw/1000/4*100)/100:null);
+        const btcRev=daPrice.map((p,i)=>mining[i]?Math.round(btcPerQ*(btcP96[i]||cry.btcPrice)*0.92*100)/100:null);
+        const btcA=btcP96.map((v,i)=>i<=NOW?v:null),btcPr=btcP96.map((v,i)=>i>=NOW?v:null);
+
+        _charts.crypto=new Chart(el,{type:'bar',plugins:[nowPlugin],data:{labels:H24,datasets:[
+          {type:'bar',data:mineA,backgroundColor:'rgba(29,158,117,.55)',borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Mining (actual)'},
+          {type:'bar',data:mineP,backgroundColor:'rgba(29,158,117,.2)',borderColor:'rgba(29,158,117,.5)',borderWidth:1,borderRadius:2,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,label:'Mining (planned)'},
+          {type:'bar',data:eCost,backgroundColor:eCost.map(v=>v!==null&&v<0?'rgba(29,158,117,.3)':'rgba(201,60,60,.3)'),borderRadius:2,barPercentage:.4,categoryPercentage:1,yAxisID:'y2',order:3,label:'Electricity cost (€)'},
+          {type:'bar',data:btcRev,backgroundColor:'rgba(230,126,34,.4)',borderRadius:2,barPercentage:.4,categoryPercentage:1,yAxisID:'y2',order:3,label:'BTC revenue (€)'},
+          {type:'line',data:daPrice,borderColor:'rgba(58,123,213,.5)',borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y1',order:1,fill:false,label:'Day-ahead (€/MWh)'},
+          {type:'line',data:btcA,borderColor:'#e67e22',borderWidth:2,pointRadius:0,tension:.4,yAxisID:'y3',order:1,fill:false,label:'BTC price (actual)'},
+          {type:'line',data:btcPr,borderColor:'#e67e22',borderWidth:2,borderDash:[5,4],pointRadius:0,tension:.4,yAxisID:'y3',order:1,fill:false,label:'BTC price (forecast)'}
+        ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{nowLine:{index:NOW},legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:7,weight:'500'},padding:4,usePointStyle:true,pointStyle:'rect'}},
+            tooltip:{callbacks:{label:function(c){const v=c.parsed.y;if(v===null||v===0)return null;if(c.datasetIndex<=1)return'Mining: '+v+'kW';if(c.datasetIndex===2)return v<0?'Elec. rev: +€'+Math.abs(v).toFixed(2):'Elec. cost: €'+v.toFixed(2);if(c.datasetIndex===3)return'BTC: €'+v.toFixed(2);if(c.dataset.label.includes('DA'))return'DA: €'+v+'/MWh';if(c.dataset.label.includes('BTC price'))return'BTC: $'+Math.round(v).toLocaleString();return null;}}}},
+          scales:{y:{position:'left',title:{display:true,text:'kW',font:{size:7,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:7},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},
+            y1:{position:'right',title:{display:true,text:'€/MWh',font:{size:7,weight:'600'},color:'#3a7bd5'},ticks:{font:{size:7},color:'#3a7bd5',callback:v=>'€'+v},grid:{drawOnChartArea:false}},
+            y2:{display:false},y3:{display:false},x:{grid:{display:false},ticks:{font:{size:7},color:'#a0a0a0',maxTicksLimit:16,maxRotation:0}}}}});
+      }
+    }
+
+    // ── Hydro: reservoir level + planned production at 15-min ──
+    if(isHyd&&hyd&&hyd.reservoirHist){
+      const el=document.getElementById('hydReservoir');if(el){
+        const res96=to96(hyd.reservoirHist);
+        const sp=splitAP(res96);
+        const plan=buildPlan(a.sessions,20);
+        _charts.hydRes=new Chart(el,{type:'line',plugins:[nowPlugin],data:{labels:H24,datasets:[
+          {data:sp.act,borderColor:'#2471a3',backgroundColor:'rgba(36,113,163,.1)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Actual level'},
+          {data:sp.pred,borderColor:'#2471a3',borderWidth:2,borderDash:[5,4],pointRadius:0,tension:.4,fill:false,label:'Predicted level'},
+          {data:plan.map((v,i)=>i>NOW&&v!==null?v:null),borderColor:'rgba(29,158,117,.5)',backgroundColor:'rgba(29,158,117,.08)',fill:true,borderWidth:1.5,borderDash:[3,3],pointRadius:0,label:'Planned production'},
+          {data:H24.map(()=>20),borderColor:'rgba(201,60,60,.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false,label:'Min safe (20%)'}
+        ]},options:cOpts('%',0,100,20)});
+      }
+    }
+
+    // ── Wind: actual vs forecast at 15-min + planned production ──
+    if(isWnd&&wnd&&wnd.forecast){
+      const el=document.getElementById('windForecast');if(el){
+        const wind96=to96(wnd.forecast);
+        const actW=wind96.map((v,i)=>i<=NOW?Math.round((v+(Math.random()-.5)*1.6)*10)/10:null);
+        const foreW=wind96.map((v,i)=>i>=NOW?v:null);
+        const plan=buildPlan(a.sessions,wnd.ratedSpeed);
+        _charts.wind=new Chart(el,{type:'line',plugins:[nowPlugin],data:{labels:H24,datasets:[
+          {data:actW,borderColor:'#085041',backgroundColor:'rgba(8,80,65,.06)',fill:true,borderWidth:2,pointRadius:0,tension:.4,label:'Actual wind'},
+          {data:foreW,borderColor:'#085041',borderWidth:2,borderDash:[5,4],pointRadius:0,tension:.4,fill:false,label:'Forecast wind'},
+          {data:plan.map((v,i)=>i>NOW&&v?v:null),borderColor:'rgba(29,158,117,.4)',backgroundColor:'rgba(29,158,117,.06)',fill:true,borderWidth:1.5,borderDash:[3,3],pointRadius:0,label:'Planned production'},
+          {data:H24.map(()=>wnd.ratedSpeed),borderColor:'rgba(29,158,117,.3)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false,label:'Rated ('+wnd.ratedSpeed+' m/s)'},
+          {data:H24.map(()=>wnd.cutIn),borderColor:'rgba(201,60,60,.25)',borderWidth:1,borderDash:[4,4],pointRadius:0,fill:false,label:'Cut-in ('+wnd.cutIn+' m/s)'}
+        ]},options:cOpts('m/s',0,undefined,undefined)});
+      }
+    }
+
+    // ── Solar: energy allocation at 15-min ──
+    if(isSol&&sol&&sol.forecast){
+      const el=document.getElementById('solarAllocChart');if(el){
+        const bldLoad=s.buildingLoad||0;
+        const daPrice=genDA();daPrice[12]=-12;daPrice[13]=-8;
+        const irr96=to96(sol.forecast);
+        const prodKw=irr96.map(irr=>Math.round(irr/1000*sol.panelWp/1000*sol.efficiency/100*10)/10);
+        const siteBat=s.assets.find(x=>x.type==='battery');
+        const batMax=siteBat?siteBat.bat?.maxCharge||400:0;
+        const avgP=daPrice.filter(p=>p>0).reduce((a,b)=>a+b,0)/Math.max(daPrice.filter(p=>p>0).length,1);
+        const sc=[],ge=[],bc=[],cu=[],actual=[],forecast=[];let curtHrs=0,lossPrev=0;
+        for(let i=0;i<N;i++){
+          const prod=prodKw[i];const isNeg=daPrice[i]<0;const isPast=i<=NOW;
+          const actP=isPast?Math.max(0,Math.round(prod*(0.82+Math.random()*0.22)*10)/10):null;
+          actual.push(actP);forecast.push(i>=NOW?prod:null);
+          const use=isPast?actP:prod;
+          if(!use||use<=0){sc.push(0);ge.push(0);bc.push(0);cu.push(0);continue;}
+          if(isNeg){const s1=Math.min(use,bldLoad);const r=use-s1;const b1=Math.min(r,batMax);const c1=r-b1;sc.push(s1);bc.push(b1);ge.push(0);cu.push(c1);if(c1>0){curtHrs+=0.25;lossPrev+=Math.round(c1*Math.abs(daPrice[i])/1000/4*100)/100;}}
+          else{const s1=Math.min(use,bldLoad);const r=use-s1;const b1=daPrice[i]<avgP*0.7&&batMax?Math.min(r,batMax):0;ge.push(r-b1);sc.push(s1);bc.push(b1);cu.push(0);}
+        }
+        sol._curtailedHrs=Math.round(curtHrs*10)/10;sol._lossPrevented=lossPrev.toFixed(1);
+        const scA=sc.map((v,i)=>i<=NOW?v:null),scP=sc.map((v,i)=>i>NOW?v:null);
+        const geA=ge.map((v,i)=>i<=NOW?v:null),geP=ge.map((v,i)=>i>NOW?v:null);
+        const bcA=bc.map((v,i)=>i<=NOW?v:null),bcP=bc.map((v,i)=>i>NOW?v:null);
+        const cuA=cu.map((v,i)=>i<=NOW?v:null),cuP=cu.map((v,i)=>i>NOW?v:null);
+
+        _charts.solar=new Chart(el,{type:'bar',plugins:[nowPlugin],data:{labels:H24,datasets:[
+          {type:'bar',data:geA,backgroundColor:'rgba(29,158,117,.6)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'past',label:'Sold to grid (actual)'},
+          {type:'bar',data:scA,backgroundColor:'rgba(230,126,34,.5)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'past',label:'Self-consumption (actual)'},
+          {type:'bar',data:bcA,backgroundColor:'rgba(58,123,213,.5)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'past',label:'Battery charging (actual)'},
+          {type:'bar',data:cuA,backgroundColor:'rgba(201,60,60,.4)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'past',label:'Curtailed (neg. price)'},
+          {type:'bar',data:geP,backgroundColor:'rgba(29,158,117,.2)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'future',label:'Sold to grid (planned)'},
+          {type:'bar',data:scP,backgroundColor:'rgba(230,126,34,.15)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'future',label:'Self-consumption (planned)'},
+          {type:'bar',data:bcP,backgroundColor:'rgba(58,123,213,.15)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'future',label:'Battery charging (planned)'},
+          {type:'bar',data:cuP,backgroundColor:'rgba(201,60,60,.15)',borderRadius:1,barPercentage:1,categoryPercentage:1,yAxisID:'y',order:4,stack:'future',label:'Curtailed (planned)'},
+          {type:'line',data:actual,borderColor:'#d4880a',borderWidth:2.5,pointRadius:0,tension:.4,yAxisID:'y',order:1,fill:false,label:'Actual production'},
+          {type:'line',data:forecast,borderColor:'#d4880a',borderWidth:2,borderDash:[5,4],pointRadius:0,tension:.4,yAxisID:'y',order:1,fill:false,label:'Forecast production'},
+          {type:'line',data:daPrice,borderColor:'rgba(58,123,213,.4)',borderWidth:1.5,pointRadius:0,stepped:'before',yAxisID:'y1',order:2,fill:false,label:'Day-ahead (€/MWh)'}
+        ]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},
+          plugins:{nowLine:{index:NOW},legend:{display:true,position:'top',onHover:function(e){e.native.target.style.cursor='pointer'},onLeave:function(e){e.native.target.style.cursor='default'},labels:{boxWidth:8,font:{size:7,weight:'500'},padding:4,usePointStyle:true,pointStyle:'rect'}},
+            tooltip:{callbacks:{label:function(c){const v=c.parsed.y;if(v===null||v===0)return null;if(c.dataset.label.includes('DA'))return'DA: €'+v+'/MWh'+(v<0?' ⚠ NEG':'');return c.dataset.label.replace(' (actual)','').replace(' (planned)','')+': '+v.toFixed(1)+' kW';}}}},
+          scales:{y:{position:'left',stacked:true,title:{display:true,text:'kW',font:{size:7,weight:'600'},color:'#a0a0a0'},ticks:{font:{size:7},color:'#a0a0a0'},grid:{color:'rgba(0,0,0,.04)'}},
+            y1:{position:'right',title:{display:true,text:'€/MWh',font:{size:7,weight:'600'},color:'#3a7bd5'},ticks:{font:{size:7},color:'#3a7bd5',callback:v=>'€'+v},grid:{drawOnChartArea:false}},
+            x:{stacked:true,grid:{display:false},ticks:{font:{size:7},color:'#a0a0a0',maxTicksLimit:16,maxRotation:0}}}}});
+      }
+    }
+  },150);
+};
+
+window.cA=function(){avEl.classList.add('hidden');};
+
+window.showSW=function(){
+  const w=wd(), cc=w.cc||'EE', partners=getPartners(cc), balMgrs=getBalMgrs(cc);
+  let partnerOpts=partners.map(p=>`<option value="${p.name}" data-desc="${p.desc}">${p.name} — €${p.price}/MWh — ${p.desc}</option>`).join('');
+  let balOpts=balMgrs.map(b=>`<option value="${b.name}" data-price="${b.price}">${b.name} — €${b.price}/MWh${b.bundledTrading?' (incl. trading)':''}</option>`).join('');
+  let subOpts=SUBSCRIPTIONS.map(s=>`<option value="${s.name}" ${s.id==='pro'?'selected':''}>${s.name} (${s.price}) — ${s.desc}</option>`).join('');
+  wizEl.classList.remove('hidden');
+  wizEl.innerHTML=`<div style="padding:28px 36px;max-width:600px;margin:0 auto">
+    <div style="font-size:20px;font-weight:600;color:var(--tx);margin-bottom:4px">New site</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:24px;line-height:1.6">Create a new physical site in ${w.label}. Trading zone: <strong>${w.zone||cc}</strong></p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>Site name</label><input id="ns-n" placeholder="e.g. Pärnu Data Centre"></div>
+      <div class="wf"><label>Location</label><input id="ns-l" placeholder="e.g. Pärnu, Pärnumaa"></div>
+    </div>
+    <div class="wf"><label>EIC / Grid connection point number</label><input id="ns-eic" placeholder="e.g. 38W-SOLAR-1234-Z"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="wf"><label>Balance manager (BRP)</label><select id="ns-balmgr">${balOpts}</select></div>
+      <div class="wf"><label>Trader / Aggregator</label><select id="ns-trader">${partnerOpts}</select></div>
+      <div class="wf"><label>Subscription plan</label><select id="ns-sub">${subOpts}</select></div>
+    </div>
+    <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin:16px 0 10px">Grid connection</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+      <div class="wf"><label>Consumption fuse (A)</label><input id="ns-gcA" type="number" value="250"></div>
+      <div class="wf"><label>Production fuse (A)</label><input id="ns-gpA" type="number" value="400"></div>
+      <div class="wf"><label>Building load (kW)</label><input id="ns-bld" type="number" value="45"></div>
+    </div>
+    <div style="font-size:10px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin:16px 0 10px">Grid fees (€/MWh)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>Transmission</label><input id="ns-t" type="number" value="12.4"></div>
+      <div class="wf"><label>Distribution</label><input id="ns-d" type="number" value="28.6"></div>
+      <div class="wf"><label>Renewable</label><input id="ns-r" type="number" value="11.3"></div>
+      <div class="wf"><label>Excise</label><input id="ns-e" type="number" value="4.47"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="wizEl.classList.add('hidden')">Cancel</button>
+      <button class="btn acc" onclick="crS()">Create site</button>
+    </div>
+  </div>`;
+};
+
+window.crS=function(){
+  const traderSel=document.getElementById('ns-trader');
+  const traderName=traderSel.value;
+  const traderDesc=traderSel.selectedOptions[0]?.dataset?.desc||'';
+  const balSel=document.getElementById('ns-balmgr');
+  const balName=balSel.value;
+  const balPrice=parseInt(balSel.selectedOptions[0]?.dataset?.price)||0;
+  const sub=document.getElementById('ns-sub').value;
+  const eic=document.getElementById('ns-eic').value||'';
+  const consA=parseInt(document.getElementById('ns-gcA').value)||200;
+  const prodA=parseInt(document.getElementById('ns-gpA').value)||400;
+  const bld=parseInt(document.getElementById('ns-bld').value)||20;
+  wd().sites.push({id:'S'+Date.now(),name:document.getElementById('ns-n').value||'New Site',loc:document.getElementById('ns-l').value||'',created:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),eic,balMgr:{name:balName,price:balPrice},gf:{t:parseFloat(document.getElementById('ns-t').value)||0,d:parseFloat(document.getElementById('ns-d').value)||0,r:parseFloat(document.getElementById('ns-r').value)||0,e:parseFloat(document.getElementById('ns-e').value)||0},gridConn:{consA,prodA},buildingLoad:bld,trader:{name:traderName,desc:traderDesc},subscription:sub,balance:0,assets:[]});
+  wizEl.classList.add('hidden');nav('sites');
+};
+
+window.showAW=function(si){
+  const s=wd().sites[si];
+  wizEl.classList.remove('hidden');
+  wizEl.innerHTML=`<div style="padding:28px 36px;max-width:560px;margin:0 auto">
+    <div style="font-size:20px;font-weight:600;color:var(--tx);margin-bottom:4px">Add asset to ${s.name}</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:24px;line-height:1.6">Register a new energy asset at this site.</p>
+    <div class="wf"><label>Asset type</label>
+      <select id="na-type">
+        <option value="genset">Genset (diesel/gas generator)</option>
+        <option value="battery">Battery (storage)</option>
+        <option value="solar">Solar (PV panels)</option>
+        <option value="wind">Wind (turbine)</option>
+        <option value="hydro">Hydro (small hydro / run-of-river)</option>
+        <option value="crypto">Crypto miner</option>
+      </select>
+    </div>
+    <div class="wf"><label>Asset ID</label><input id="na-id" placeholder="e.g. GEN-003"></div>
+    <div class="wf"><label>Model / Description</label><input id="na-model" placeholder="e.g. CAT C18"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>Capacity (kW)</label><input id="na-kw" type="number" placeholder="e.g. 1000"></div>
+      <div class="wf"><label>Threshold (€/MWh)</label><input id="na-thr" type="number" value="350"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>CAPEX (€)</label><input id="na-capex" type="number" placeholder="e.g. 85000"></div>
+      <div class="wf"><label>Initial status</label>
+        <select id="na-status">
+          <option value="pending">Pending (not yet active)</option>
+          <option value="online">Online</option>
+          <option value="maintenance">Maintenance</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="wizEl.classList.add('hidden')">Cancel</button>
+      <button class="btn acc" onclick="createAsset(${si})">Create asset</button>
+    </div>
+  </div>`;
+};
+
+window.createAsset=function(si){
+  const s=wd().sites[si];
+  const type=document.getElementById('na-type').value;
+  const id=document.getElementById('na-id').value||type.toUpperCase().substring(0,3)+'-'+String(s.assets.length+1).padStart(3,'0');
+  const model=document.getElementById('na-model').value||'New asset';
+  const kw=parseInt(document.getElementById('na-kw').value)||100;
+  const thr=parseInt(document.getElementById('na-thr').value)||0;
+  const capex=parseInt(document.getElementById('na-capex').value)||0;
+  const status=document.getElementById('na-status').value;
+  s.assets.push({id,type,model,kw,status,rev:0,avail:0,capex,threshold:thr,installed:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),sessions:[]});
+  wizEl.classList.add('hidden');
+  nav('sites');
+};
+
+// ── Rebuild workspace selector ──
+function rebuildWSel(){
+  let opts='';Object.keys(W).forEach(k=>{opts+=`<option value="${k}" ${k===cW?'selected':''}>${W[k].label}</option>`;});
+  wSel.innerHTML=opts;
+}
+
+// ── Add Workspace Wizard ──
+window.showAddWS=function(){
+  wizEl.classList.remove('hidden');
+  let countryOpts='';Object.keys(ENTSOE).sort((a,b)=>ENTSOE[a].name.localeCompare(ENTSOE[b].name)).forEach(cc=>{
+    countryOpts+=`<option value="${cc}">${ENTSOE[cc].flag} ${ENTSOE[cc].name} — ${cc}</option>`;
+  });
+  wizEl.innerHTML=`<div style="padding:28px 36px;max-width:560px;margin:0 auto">
+    <div style="font-size:20px;font-weight:600;color:var(--tx);margin-bottom:4px">Add workspace</div>
+    <p style="font-size:12px;color:var(--tx2);margin-bottom:24px;line-height:1.6">Create a new workspace for a legal entity in an ENTSO-E country.</p>
+    <div class="wf"><label>Company name</label><input id="nw-name" placeholder="e.g. Nordic Power AS"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="wf"><label>Company ID</label><input id="nw-reg" placeholder="e.g. 12345678"></div>
+      <div class="wf"><label>VAT number</label><input id="nw-vat" placeholder="e.g. NO123456789MVA"></div>
+    </div>
+    <div class="wf"><label>Country</label><select id="nw-cc" onchange="updateZones();updatePartners()">${countryOpts}</select></div>
+    <div class="wf"><label>Energy trading zone</label><select id="nw-zone"></select></div>
+    <div style="background:var(--cbg2);border-radius:var(--rs);padding:12px;margin-bottom:14px">
+      <div style="font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;margin-bottom:6px">Available partners in this region</div>
+      <div id="nw-partners"></div>
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px">
+      <button class="btn" onclick="wizEl.classList.add('hidden')">Cancel</button>
+      <button class="btn acc" onclick="createWS()">Create workspace</button>
+    </div>
+  </div>`;
+  updateZones();updatePartners();
+};
+
+window.updateZones=function(){
+  const cc=document.getElementById('nw-cc').value;
+  const zones=ENTSOE[cc]?.zones||[cc];
+  document.getElementById('nw-zone').innerHTML=zones.map(z=>`<option>${z}</option>`).join('');
+};
+
+window.updatePartners=function(){
+  const cc=document.getElementById('nw-cc').value;
+  const partners=getPartners(cc);
+  document.getElementById('nw-partners').innerHTML=partners.map(p=>
+    `<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--brd)"><div style="width:28px;height:28px;border-radius:6px;background:var(--cbg);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--acc);flex-shrink:0">${p.name.substring(0,2).toUpperCase()}</div><div><div style="font-size:11px;font-weight:600;color:var(--tx)">${p.name}</div><div style="font-size:9px;color:var(--tx2)">${p.desc}</div></div></div>`
+  ).join('');
+};
+
+window.createWS=function(){
+  const name=document.getElementById('nw-name').value||'New Company';
+  const reg=document.getElementById('nw-reg').value||'';
+  const vat=document.getElementById('nw-vat').value||'';
+  const cc=document.getElementById('nw-cc').value;
+  const zone=document.getElementById('nw-zone').value;
+  const country=ENTSOE[cc]?.name||cc;
+  const key='ws_'+Date.now();
+  W[key]={label:`${name} — ${country}`,reg,vat,cc,zone,sites:[]};
+  cW=key;
+  wizEl.classList.add('hidden');
+  rebuildWSel();nav('dashboard');
+};
+
+// ── Main nav ──
+function nav(p) {
+  cP=p; destroyCharts(); avEl.classList.add('hidden'); wizEl.classList.add('hidden');
+  if(p!=='revenue') revSite='all';
+  buildNav();
+  ptEl.textContent=p[0].toUpperCase()+p.slice(1)+' — '+wd().label;
+  if(R[p]) R[p]();
+}
+
+// ── Events ──
+document.getElementById('lang').addEventListener('click',e=>{
+  if(e.target.tagName==='SPAN'){document.querySelectorAll('#lang span').forEach(x=>x.classList.remove('on'));e.target.classList.add('on');nav(cP);}
+});
+wSel.addEventListener('change',()=>{cW=wSel.value;revSite='all';nav(cP);});
+
+// ── Init ──
+rebuildWSel();
+nav('dashboard');
+</script>
+</body>
+</html>
